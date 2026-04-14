@@ -70,8 +70,8 @@ export default async function OrdersPage() {
               <div className="mt-6 grid gap-4 lg:grid-cols-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">User</p>
-                  <p className="mt-2 font-medium text-slate-950">{order.user.name ?? "Customer"}</p>
-                  <p className="text-sm text-slate-600">{order.user.email}</p>
+                  <p className="mt-2 font-medium text-slate-950">{order.user?.name ?? "Customer"}</p>
+                  <p className="text-sm text-slate-600">{order.user?.email ?? order.pickupEmail ?? "No account email"}</p>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Pickup contact</p>
