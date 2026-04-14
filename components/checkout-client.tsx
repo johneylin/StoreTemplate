@@ -1,20 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import type { Product } from "@/generated/prisma/client";
+import type { PaymentMethod, Product } from "@/generated/prisma/client";
 import { useCart } from "@/components/cart-provider";
 import { formatCurrency } from "@/lib/utils";
 
-type CheckoutClientProps = {
-  products: Product[];
+type PickupSlot = {
+  id: string;
+  label: string;
 };
 
-export function CheckoutClient({ products }: CheckoutClientProps) {
+type CheckoutClientProps = {
+  products: Product[];
+  pickupAddress: string;
+  pickupSlots: PickupSlot[];
+};
+
+const paymentLabels: Record<PaymentMethod, string> = {
+  E_TRANSFER: "E-transfer",
+  CASH: "Cash",
+};
+
+export function CheckoutClient({ products, pickupAddress, pickupSlots }: CheckoutClientProps) {
   const { items, clearCart } = useCart();
   const { data: session, status } = useSession();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("E_TRANSFER");
+  const [pickupPhone, setPickupPhone] = useState("");
+  const [pickupEmail, setPickupEmail] = useState("");
+  const [pickupTimeSlotId, setPickupTimeSlotId] = useState(pickupSlots[0]?.id ?? "");
 
   const lineItems = useMemo(
     () =>
@@ -28,6 +44,19 @@ export function CheckoutClient({ products }: CheckoutClientProps) {
   );
 
   const total = lineItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const hasPickupContact = Boolean(pickupPhone.trim() || pickupEmail.trim());
+
+  useEffect(() => {
+    if (!pickupEmail && session?.user?.email) {
+      setPickupEmail(session.user.email);
+    }
+  }, [pickupEmail, session?.user?.email]);
+
+  useEffect(() => {
+    if (!pickupSlots.some((slot) => slot.id === pickupTimeSlotId)) {
+      setPickupTimeSlotId(pickupSlots[0]?.id ?? "");
+    }
+  }, [pickupSlots, pickupTimeSlotId]);
 
   async function handleCheckout() {
     setPending(true);
@@ -37,18 +66,24 @@ export function CheckoutClient({ products }: CheckoutClientProps) {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          items,
+          paymentMethod,
+          pickupPhone,
+          pickupEmail,
+          pickupTimeSlotId,
+        }),
       });
 
-      const payload = (await response.json()) as { url?: string; error?: string };
-      if (!response.ok || !payload.url) {
-        throw new Error(payload.error ?? "Unable to start checkout.");
+      const payload = (await response.json()) as { orderId?: string; error?: string };
+      if (!response.ok || !payload.orderId) {
+        throw new Error(payload.error ?? "Unable to place order.");
       }
 
       clearCart();
-      window.location.href = payload.url;
+      window.location.href = `/checkout/success?order_id=${payload.orderId}`;
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to start checkout.");
+      setError(caught instanceof Error ? caught.message : "Unable to place order.");
       setPending(false);
     }
   }
@@ -65,11 +100,11 @@ export function CheckoutClient({ products }: CheckoutClientProps) {
     <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
       <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Checkout</p>
-        <h1 className="mt-3 font-display text-4xl font-semibold text-slate-950">Complete your purchase</h1>
+        <h1 className="mt-3 font-display text-4xl font-semibold text-slate-950">Complete your pickup order</h1>
         <p className="mt-3 text-slate-600">
           {session?.user
             ? `Signed in as ${session.user.email}`
-            : "Please sign in before starting checkout."}
+            : "Guest checkout is enabled. You can place an order without logging in."}
         </p>
 
         <div className="mt-8 space-y-4">
@@ -86,10 +121,79 @@ export function CheckoutClient({ products }: CheckoutClientProps) {
       </section>
 
       <aside className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="font-display text-2xl font-semibold text-slate-950">Payment</h2>
+        <h2 className="font-display text-2xl font-semibold text-slate-950">Pickup details</h2>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          This starter uses Stripe Checkout. Add your real Stripe test key in `.env` to complete a hosted test payment.
+          Orders are pickup only. Choose your pickup time and leave a phone number or email address so we can reach you if needed.
         </p>
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+          Pickup address: <span className="font-semibold text-slate-950">{pickupAddress}</span>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Phone number
+            <input
+              type="tel"
+              value={pickupPhone}
+              onChange={(event) => setPickupPhone(event.target.value)}
+              placeholder="416-555-0123"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            />
+          </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Email address
+            <input
+              type="email"
+              value={pickupEmail}
+              onChange={(event) => setPickupEmail(event.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            />
+          </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
+            Pick up time
+            <select
+              value={pickupTimeSlotId}
+              onChange={(event) => setPickupTimeSlotId(event.target.value)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            >
+              {pickupSlots.map((slot) => (
+                <option key={slot.id} value={slot.id}>{slot.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {!pickupSlots.length ? (
+          <p className="mt-4 text-sm font-medium text-rose-600">No pickup times are available right now. Please check back after the admin adds a pickup slot.</p>
+        ) : null}
+
+        <h2 className="mt-8 font-display text-2xl font-semibold text-slate-950">Payment method</h2>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          This store accepts manual payments only. Choose e-transfer or cash, then place the order to receive the payment instructions.
+        </p>
+        <div className="mt-6 space-y-3">
+          {(["E_TRANSFER", "CASH"] as PaymentMethod[]).map((method) => (
+            <label key={method} className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 px-4 py-4 transition hover:border-slate-950">
+              <input
+                type="radio"
+                name="paymentMethod"
+                value={method}
+                checked={paymentMethod === method}
+                onChange={() => setPaymentMethod(method)}
+                className="mt-1 h-4 w-4"
+              />
+              <span>
+                <span className="block font-semibold text-slate-950">{paymentLabels[method]}</span>
+                <span className="mt-1 block text-sm text-slate-500">
+                  {method === "E_TRANSFER"
+                    ? "Place the order first, then send your e-transfer using the instructions on the confirmation page."
+                    : "Place the order now and bring cash when you arrive for pickup."}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
         <div className="mt-6 flex items-center justify-between border-y border-slate-200 py-4 text-sm">
           <span className="text-slate-500">Total</span>
           <span className="text-lg font-semibold text-slate-950">{formatCurrency(total)}</span>
@@ -97,11 +201,11 @@ export function CheckoutClient({ products }: CheckoutClientProps) {
         {error ? <p className="mt-4 text-sm font-medium text-rose-600">{error}</p> : null}
         <button
           type="button"
-          disabled={!session?.user || pending}
+          disabled={pending || !pickupSlots.length || !pickupTimeSlotId || !hasPickupContact}
           onClick={handleCheckout}
           className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Redirecting..." : session?.user ? "Pay with Stripe" : "Login required"}
+          {pending ? "Placing order..." : `Place order with ${paymentLabels[paymentMethod]}`}
         </button>
       </aside>
     </div>

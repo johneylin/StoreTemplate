@@ -11,7 +11,6 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
   { href: "/orders", label: "Orders" },
-  { href: "/admin", label: "Admin" },
 ];
 
 export function SiteHeader() {
@@ -61,7 +60,7 @@ export function SiteHeader() {
               className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10"
             >
               <UserRound className="h-4 w-4" />
-              {session.user.name ?? "Account"}
+              {session.user.name ?? "Sign out"}
             </button>
           ) : (
             <Link

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { getServerSession } from "next-auth";
+import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getStripe } from "@/lib/stripe";
+import { generateUniqueOrderCode } from "@/lib/order-code";
+import { formatPickupSlotLabel } from "@/lib/order-display";
 
 const payloadSchema = z.object({
   items: z.array(
@@ -12,24 +13,53 @@ const payloadSchema = z.object({
       quantity: z.number().int().positive(),
     }),
   ).min(1),
+  paymentMethod: z.enum(["E_TRANSFER", "CASH"]),
+  pickupPhone: z.string().trim().optional(),
+  pickupEmail: z.string().trim().optional(),
+  pickupTimeSlotId: z.string().trim().min(1),
+}).superRefine((value, ctx) => {
+  if (!value.pickupPhone && !value.pickupEmail) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["pickupPhone"],
+      message: "Enter a phone number or email address for pickup.",
+    });
+  }
+
+  if (value.pickupEmail && !z.email().safeParse(value.pickupEmail).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["pickupEmail"],
+      message: "Enter a valid email address.",
+    });
+  }
 });
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Please sign in before checking out." }, { status: 401 });
-  }
 
   const payload = payloadSchema.safeParse(await request.json());
   if (!payload.success) {
-    return NextResponse.json({ error: "Your cart payload is invalid." }, { status: 400 });
+    return NextResponse.json({ error: payload.error.issues[0]?.message ?? "Your order payload is invalid." }, { status: 400 });
   }
 
-  const products = await db.product.findMany({
-    where: {
-      id: { in: payload.data.items.map((item) => item.productId) },
-    },
-  });
+  const [products, pickupTimeSlot] = await Promise.all([
+    db.product.findMany({
+      where: {
+        id: { in: payload.data.items.map((item) => item.productId) },
+      },
+    }),
+    db.pickupTimeSlot.findFirst({
+      where: {
+        id: payload.data.pickupTimeSlotId,
+        active: true,
+      },
+    }),
+  ]);
+
+  if (!pickupTimeSlot) {
+    return NextResponse.json({ error: "The selected pickup time is no longer available." }, { status: 400 });
+  }
 
   const lineItems = payload.data.items
     .map((item) => {
@@ -50,11 +80,29 @@ export async function POST(request: Request) {
   }
 
   const total = lineItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const orderCode = await generateUniqueOrderCode(async (code) => {
+    const existing = await db.order.findUnique({
+      where: { orderCode: code },
+      select: { id: true },
+    });
+    return Boolean(existing);
+  });
 
   const order = await db.order.create({
     data: {
-      userId: session.user.id,
+      orderCode,
+      userId: session?.user?.id ?? null,
+      paymentMethod: payload.data.paymentMethod,
+      fulfillmentMethod: "PICKUP",
+      pickupPhone: payload.data.pickupPhone?.trim() || null,
+      pickupEmail: payload.data.pickupEmail?.trim() || null,
+      pickupTimeLabel: formatPickupSlotLabel(pickupTimeSlot),
+      pickupTimeSlotId: pickupTimeSlot.id,
       total,
+      shippingStreet: null,
+      shippingCity: null,
+      shippingState: null,
+      shippingPostCode: null,
       items: {
         create: lineItems.map((item) => ({
           productId: item.product.id,
@@ -65,46 +113,5 @@ export async function POST(request: Request) {
     },
   });
 
-  let stripe;
-  try {
-    stripe = getStripe();
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Stripe is not configured." },
-      { status: 500 },
-    );
-  }
-
-  const origin = new URL(request.url).origin;
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "payment",
-    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/cart`,
-    customer_email: session.user.email ?? undefined,
-    metadata: {
-      orderId: order.id,
-      userId: session.user.id,
-    },
-    line_items: lineItems.map((item) => ({
-      quantity: item.quantity,
-      price_data: {
-        currency: "usd",
-        unit_amount: item.product.price,
-        product_data: {
-          name: item.product.name,
-          description: item.product.description,
-          images: [item.product.imageUrl],
-        },
-      },
-    })),
-  });
-
-  await db.order.update({
-    where: { id: order.id },
-    data: {
-      stripeCheckoutSessionId: checkoutSession.id,
-    },
-  });
-
-  return NextResponse.json({ url: checkoutSession.url });
+  return NextResponse.json({ orderId: order.orderCode ?? order.id });
 }

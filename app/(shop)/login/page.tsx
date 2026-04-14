@@ -6,7 +6,7 @@ export default async function LoginPage() {
   const session = await getSession();
 
   if (session?.user) {
-    redirect("/");
+    redirect(session.user.role === "ADMIN" ? "/admin" : "/");
   }
 
   return (
@@ -14,7 +14,7 @@ export default async function LoginPage() {
       <section className="rounded-[2.5rem] bg-slate-950 p-10 text-white shadow-2xl shadow-slate-900/20">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Account access</p>
         <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-balance">Login for checkout, order history, and admin access.</h1>
-        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">Seeded demo accounts are included so you can explore the protected flows immediately after setting up the database.</p>
+        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">Seeded demo accounts are included so you can explore the protected customer and admin flows immediately after setting up the database.</p>
         <div className="mt-8 rounded-[2rem] bg-white/5 p-6 text-sm leading-7 text-slate-200">
           <p><strong>Admin:</strong> admin@example.com / Admin123!</p>
           <p><strong>Shopper:</strong> shopper@example.com / Shopper123!</p>

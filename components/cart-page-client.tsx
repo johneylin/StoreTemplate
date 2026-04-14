@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/generated/prisma/client";
 import { useCart } from "@/components/cart-provider";
@@ -52,7 +53,13 @@ export function CartPageClient({ products }: CartPageClientProps) {
         {lineItems.map(({ product, quantity }) => (
           <article key={product.id} className="flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <img src={product.imageUrl} alt={product.name} className="h-24 w-24 rounded-2xl object-cover" />
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                width={96}
+                height={96}
+                className="h-24 w-24 rounded-2xl object-cover"
+              />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">{product.category}</p>
                 <Link href={`/products/${product.slug}`} className="mt-1 block font-display text-xl font-semibold text-slate-950">

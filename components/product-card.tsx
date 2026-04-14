@@ -1,16 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/generated/prisma/client";
-import { formatCurrency } from "@/lib/utils";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { formatCurrency } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-      <div className="aspect-[4/3] overflow-hidden bg-slate-100">
-        <img
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+        <Image
           src={product.imageUrl}
           alt={product.name}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          className="object-cover transition duration-500 group-hover:scale-105"
         />
       </div>
       <div className="space-y-4 p-5">

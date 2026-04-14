@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
@@ -20,11 +21,17 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-12 pb-20 lg:grid-cols-[1fr_0.85fr]">
-      <div className="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm lg:aspect-auto lg:min-h-[620px]">
         {product.videoUrl ? (
           <video src={product.videoUrl} controls className="h-full w-full object-cover" />
         ) : (
-          <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 1024px) 100vw, 55vw"
+            className="object-cover"
+          />
         )}
       </div>
 

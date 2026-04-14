@@ -15,20 +15,20 @@ export default async function HomePage() {
     <div className="pb-20">
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-16 lg:grid-cols-[1.3fr_0.7fr] lg:py-24">
         <div className="rounded-[2.5rem] border border-white/40 bg-slate-950 px-8 py-10 text-white shadow-2xl shadow-slate-900/20 lg:px-12 lg:py-14">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">Modern retail starter</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">Customer storefront</p>
           <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold tracking-tight text-balance md:text-7xl">
-            Launch a premium storefront with auth, admin, and checkout built in.
+            Shop a premium catalog with login, cart, and manual checkout already in place.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-            Northstar Commerce gives you a polished shopping experience, product management for admins, order history for customers, and a Stripe checkout flow wired to a PostgreSQL database.
+            Northstar Commerce gives customers a polished shopping experience with searchable products, protected order history, and a clean checkout flow for pickup or shipping.
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link href="/products" className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
               Browse products
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/admin" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-              Open admin dashboard
+            <Link href="/orders" className="inline-flex items-center gap-2 rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+              View order history
             </Link>
           </div>
         </div>
@@ -42,13 +42,13 @@ export default async function HomePage() {
             },
             {
               icon: ShieldCheck,
-              title: "Auth + Orders",
-              description: "Credential login, protected order history, and admin-only management tools.",
+              title: "Account + Orders",
+              description: "Credential login, protected order history, structured shipping details, and clear order summaries.",
             },
             {
               icon: Sparkles,
-              title: "Real starter stack",
-              description: "Next.js App Router, Tailwind CSS, Prisma, PostgreSQL, and Stripe in one clean repo.",
+              title: "Manual payments",
+              description: "Accept e-transfer or cash orders without a gateway while still tracking every order in PostgreSQL.",
             },
           ].map((item) => (
             <article key={item.title} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">

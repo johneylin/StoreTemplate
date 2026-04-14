@@ -6,7 +6,6 @@ A starter ecommerce website built with the following stack:
 - TypeScript
 - Tailwind CSS 4
 - Prisma 7 with PostgreSQL
-- Stripe Checkout
 - NextAuth credentials login
 
 ## Included pages
@@ -19,6 +18,12 @@ A starter ecommerce website built with the following stack:
 - Login / register page
 - Order history page
 - Admin dashboard for product CRUD
+- Admin order workspace with pickup slot management
+
+## Payments
+
+- E-transfer
+- Cash
 
 ## Seeded accounts
 
@@ -79,14 +84,19 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_URL`: Base URL for NextAuth callbacks
 - `NEXTAUTH_SECRET`: Secret used by NextAuth
-- `STRIPE_SECRET_KEY`: Stripe secret key for hosted checkout
+- `ETRANSFER_EMAIL`: Destination email shown for e-transfer payments
+- `PICKUP_STREET`: Pickup street address
+- `PICKUP_CITY`: Pickup city
+- `PICKUP_STATE`: Pickup state or province
+- `PICKUP_POSTCODE`: Pickup postal code or ZIP code
 
 ## Notes
 
-- Checkout uses Stripe Checkout and creates a local order before redirecting.
-- Orders are marked paid on the success page when Stripe reports a paid session.
+- Checkout is pickup only.
+- Customers must choose a pickup time and provide either a phone number or an email address before placing an order.
+- Admins manage available pickup time labels from the admin order workspace.
+- The order confirmation page shows the payment method, pickup address, pickup time, contact detail, and a short `YYMMxxxxx` order code.
 - Admin product management uses image/video URLs to keep the starter simple and reviewable.
-- ESLint passes with a few `img` optimization warnings because the admin accepts arbitrary remote asset URLs.
 
 ## Verification run completed here
 

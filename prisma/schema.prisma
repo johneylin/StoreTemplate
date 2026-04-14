@@ -15,7 +15,18 @@ enum Role {
 enum OrderStatus {
   PENDING
   PAID
+  FULFILLED
   CANCELED
+}
+
+enum PaymentMethod {
+  E_TRANSFER
+  CASH
+}
+
+enum FulfillmentMethod {
+  PICKUP
+  SHIP
 }
 
 model User {
@@ -48,16 +59,38 @@ model Product {
   orderItems  OrderItem[]
 }
 
+model PickupTimeSlot {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  startTime DateTime
+  endTime   DateTime
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
 model Order {
-  id                      String       @id @default(cuid())
-  userId                  String
-  stripeCheckoutSessionId String?      @unique
-  status                  OrderStatus  @default(PENDING)
-  total                   Int
-  createdAt               DateTime     @default(now())
-  updatedAt               DateTime     @updatedAt
-  items                   OrderItem[]
-  user                    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String            @id @default(cuid())
+  orderCode         String?           @unique
+  userId            String?
+  status            OrderStatus       @default(PENDING)
+  paymentMethod     PaymentMethod     @default(E_TRANSFER)
+  fulfillmentMethod FulfillmentMethod @default(PICKUP)
+  shippingStreet    String?
+  shippingCity      String?
+  shippingState     String?
+  shippingPostCode  String?
+  pickupPhone       String?
+  pickupEmail       String?
+  pickupTimeLabel   String?
+  pickupTimeSlotId  String?
+  total             Int
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  items             OrderItem[]
+  user              User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pickupTimeSlot    PickupTimeSlot?   @relation(fields: [pickupTimeSlotId], references: [id], onDelete: SetNull)
 }
 
 model OrderItem {

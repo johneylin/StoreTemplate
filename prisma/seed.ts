@@ -18,9 +18,19 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function createSlot(date: string, startTime: string, endTime: string) {
+  return {
+    date: new Date(`${date}T00:00:00`),
+    startTime: new Date(`${date}T${startTime}:00`),
+    endTime: new Date(`${date}T${endTime}:00`),
+    active: true,
+  };
+}
+
 async function main() {
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.pickupTimeSlot.deleteMany();
   await prisma.account.deleteMany();
   await prisma.session.deleteMany();
   await prisma.product.deleteMany();
@@ -103,6 +113,14 @@ async function main() {
       ...product,
       slug: slugify(product.name),
     })),
+  });
+
+  await prisma.pickupTimeSlot.createMany({
+    data: [
+      createSlot("2026-04-15", "10:00", "12:00"),
+      createSlot("2026-04-15", "14:00", "16:00"),
+      createSlot("2026-04-16", "16:00", "18:00"),
+    ],
   });
 }
 

@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation";
 
 type Mode = "login" | "register";
 
+type SessionResponse = {
+  user?: {
+    role?: "ADMIN" | "USER";
+  };
+};
+
 export function AuthForm() {
   const [mode, setMode] = useState<Mode>("login");
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +52,11 @@ export function AuthForm() {
         throw new Error("Invalid email or password.");
       }
 
-      router.push(mode === "register" ? "/products" : "/");
+      const sessionResponse = await fetch("/api/auth/session");
+      const session = (await sessionResponse.json()) as SessionResponse;
+      const destination = session.user?.role === "ADMIN" ? "/admin" : mode === "register" ? "/products" : "/";
+
+      router.push(destination);
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Something went wrong.");
