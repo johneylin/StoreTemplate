@@ -54,7 +54,7 @@ A starter ecommerce website built with the following stack:
 
    ```bash
    npm run prisma:generate
-   npm run db:push
+   npm run db:migrate -- --name init
    npm run db:seed
    ```
 
@@ -66,6 +66,28 @@ A starter ecommerce website built with the following stack:
 
 6. Open [http://localhost:3000](http://localhost:3000).
 
+## Vercel deployment
+
+1. Create a PostgreSQL database and set `DATABASE_URL` in Vercel.
+2. Add these Vercel environment variables:
+   - `DATABASE_URL`
+   - `NEXTAUTH_URL`
+   - `NEXTAUTH_SECRET`
+   - `ETRANSFER_EMAIL`
+   - `PICKUP_STREET`
+   - `PICKUP_CITY`
+   - `PICKUP_STATE`
+   - `PICKUP_POSTCODE`
+3. In Vercel build settings, use:
+
+   ```bash
+   npm run vercel-build
+   ```
+
+4. Redeploy.
+
+This project now includes Prisma migrations in [prisma/migrations](./prisma/migrations). Vercel should run `prisma migrate deploy` during build to create/update tables in production.
+
 ## Docker-only workflow used in this repository
 
 If Node is not installed on the host, you can use the same containerized workflow I used here:
@@ -73,7 +95,7 @@ If Node is not installed on the host, you can use the same containerized workflo
 ```bash
 docker compose up -d db
 docker run --rm -v "${PWD}:/app" -w /app node:22 bash -lc "npm install"
-docker run --rm -v "${PWD}:/app" -w /app node:22 bash -lc "npm run prisma:generate && npm run db:push && npm run db:seed"
+docker run --rm -v "${PWD}:/app" -w /app node:22 bash -lc "npm run prisma:generate && npx prisma migrate dev --name init && npm run db:seed"
 docker run --rm -p 3000:3000 -v "${PWD}:/app" -w /app node:22 bash -lc "npm run dev"
 ```
 
@@ -93,8 +115,8 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 ## Notes
 
 - Checkout is pickup only.
-- Customers must choose a pickup time and provide either a phone number or an email address before placing an order.
-- Admins manage available pickup time labels from the admin order workspace.
+- Customers can place guest orders, but they must choose a pickup time and provide either a phone number or an email address.
+- Admins manage available pickup date/time windows from the admin order workspace.
 - The order confirmation page shows the payment method, pickup address, pickup time, contact detail, and a short `YYMMxxxxx` order code.
 - Admin product management uses image/video URLs to keep the starter simple and reviewable.
 
