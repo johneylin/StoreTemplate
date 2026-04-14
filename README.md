@@ -27,8 +27,7 @@ A starter ecommerce website built with the following stack:
 
 ## Seeded accounts
 
-- Admin: `admin@example.com` / `Admin123!`
-- Shopper: `shopper@example.com` / `Shopper123!`
+- Admin: values come from `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`\n- Shopper: values come from `SHOPPER_NAME`, `SHOPPER_EMAIL`, and `SHOPPER_PASSWORD` (defaults are included in `.env.example`)
 
 ## Local setup
 
@@ -110,7 +109,7 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `PICKUP_STREET`: Pickup street address
 - `PICKUP_CITY`: Pickup city
 - `PICKUP_STATE`: Pickup state or province
-- `PICKUP_POSTCODE`: Pickup postal code or ZIP code
+- `PICKUP_POSTCODE`: Pickup postal code or ZIP code\n- `ADMIN_NAME`: Seeded admin display name\n- `ADMIN_EMAIL`: Seeded admin login email\n- `ADMIN_PASSWORD`: Seeded admin login password\n- `SHOPPER_NAME`: Seeded shopper display name\n- `SHOPPER_EMAIL`: Seeded shopper login email\n- `SHOPPER_PASSWORD`: Seeded shopper login password
 
 ## Notes
 
@@ -129,3 +128,4 @@ docker run --rm -v "C:\Users\Johney\source\repos\TempOrder:/app" -w /app node:22
 docker run --rm -v "C:\Users\Johney\source\repos\TempOrder:/app" -w /app node:22 bash -lc "npm run lint"
 docker run --rm -v "C:\Users\Johney\source\repos\TempOrder:/app" -w /app node:22 bash -lc "npm run build"
 ```
+

@@ -7,6 +7,14 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not configured.");
 }
 
+function getRequiredEnv(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} is not configured.`);
+  }
+  return value;
+}
+
 const prisma = new PrismaClient({
   adapter: new PrismaPg(connectionString),
 });
@@ -36,13 +44,20 @@ async function main() {
   await prisma.product.deleteMany();
   await prisma.user.deleteMany();
 
-  const passwordHash = await bcrypt.hash("Admin123!", 10);
-  const shopperPasswordHash = await bcrypt.hash("Shopper123!", 10);
+  const adminName = getRequiredEnv("ADMIN_NAME");
+  const adminEmail = getRequiredEnv("ADMIN_EMAIL");
+  const adminPassword = getRequiredEnv("ADMIN_PASSWORD");
+  const shopperName = process.env.SHOPPER_NAME?.trim() || "Sample Shopper";
+  const shopperEmail = process.env.SHOPPER_EMAIL?.trim() || "shopper@example.com";
+  const shopperPassword = process.env.SHOPPER_PASSWORD?.trim() || "Shopper123!";
+
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
+  const shopperPasswordHash = await bcrypt.hash(shopperPassword, 10);
 
   await prisma.user.create({
     data: {
-      name: "Admin User",
-      email: "admin@example.com",
+      name: adminName,
+      email: adminEmail,
       passwordHash,
       role: Role.ADMIN,
     },
@@ -50,8 +65,8 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      name: "Sample Shopper",
-      email: "shopper@example.com",
+      name: shopperName,
+      email: shopperEmail,
       passwordHash: shopperPasswordHash,
       role: Role.USER,
     },
