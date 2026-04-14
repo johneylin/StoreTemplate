@@ -27,7 +27,8 @@ A starter ecommerce website built with the following stack:
 
 ## Seeded accounts
 
-- Admin: values come from `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`\n- Shopper: values come from `SHOPPER_NAME`, `SHOPPER_EMAIL`, and `SHOPPER_PASSWORD` (defaults are included in `.env.example`)
+- Admin: values come from `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`
+- Shopper: values come from `SHOPPER_NAME`, `SHOPPER_EMAIL`, and `SHOPPER_PASSWORD` (defaults are included in `.env.example`)
 
 ## Local setup
 
@@ -77,6 +78,12 @@ A starter ecommerce website built with the following stack:
    - `PICKUP_CITY`
    - `PICKUP_STATE`
    - `PICKUP_POSTCODE`
+   - `ADMIN_NAME`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD`
+   - `SHOPPER_NAME`
+   - `SHOPPER_EMAIL`
+   - `SHOPPER_PASSWORD`
 3. In Vercel build settings, use:
 
    ```bash
@@ -86,6 +93,16 @@ A starter ecommerce website built with the following stack:
 4. Redeploy.
 
 This project now includes Prisma migrations in [prisma/migrations](./prisma/migrations). Vercel should run `prisma migrate deploy` during build to create/update tables in production.
+
+## Safe production seed
+
+The seed script is now idempotent:
+- users are upserted by email
+- products are upserted by slug
+- pickup windows are created if missing and updated if already present
+- existing orders are not deleted
+
+That makes it safe to run once against production to bootstrap admin credentials and sample catalog data.
 
 ## Docker-only workflow used in this repository
 
@@ -109,7 +126,13 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `PICKUP_STREET`: Pickup street address
 - `PICKUP_CITY`: Pickup city
 - `PICKUP_STATE`: Pickup state or province
-- `PICKUP_POSTCODE`: Pickup postal code or ZIP code\n- `ADMIN_NAME`: Seeded admin display name\n- `ADMIN_EMAIL`: Seeded admin login email\n- `ADMIN_PASSWORD`: Seeded admin login password\n- `SHOPPER_NAME`: Seeded shopper display name\n- `SHOPPER_EMAIL`: Seeded shopper login email\n- `SHOPPER_PASSWORD`: Seeded shopper login password
+- `PICKUP_POSTCODE`: Pickup postal code or ZIP code
+- `ADMIN_NAME`: Seeded admin display name
+- `ADMIN_EMAIL`: Seeded admin login email
+- `ADMIN_PASSWORD`: Seeded admin login password
+- `SHOPPER_NAME`: Seeded shopper display name
+- `SHOPPER_EMAIL`: Seeded shopper login email
+- `SHOPPER_PASSWORD`: Seeded shopper login password
 
 ## Notes
 
@@ -128,4 +151,3 @@ docker run --rm -v "C:\Users\Johney\source\repos\TempOrder:/app" -w /app node:22
 docker run --rm -v "C:\Users\Johney\source\repos\TempOrder:/app" -w /app node:22 bash -lc "npm run lint"
 docker run --rm -v "C:\Users\Johney\source\repos\TempOrder:/app" -w /app node:22 bash -lc "npm run build"
 ```
-

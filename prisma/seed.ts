@@ -35,15 +35,80 @@ function createSlot(date: string, startTime: string, endTime: string) {
   };
 }
 
-async function main() {
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.pickupTimeSlot.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
+async function seedUser(input: {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+}) {
+  const passwordHash = await bcrypt.hash(input.password, 10);
 
+  await prisma.user.upsert({
+    where: { email: input.email },
+    update: {
+      name: input.name,
+      passwordHash,
+      role: input.role,
+    },
+    create: {
+      name: input.name,
+      email: input.email,
+      passwordHash,
+      role: input.role,
+    },
+  });
+}
+
+async function seedProduct(product: {
+  name: string;
+  category: string;
+  price: number;
+  featured: boolean;
+  imageUrl: string;
+  description: string;
+}) {
+  const slug = slugify(product.name);
+
+  await prisma.product.upsert({
+    where: { slug },
+    update: {
+      ...product,
+      slug,
+    },
+    create: {
+      ...product,
+      slug,
+    },
+  });
+}
+
+async function seedPickupSlot(slot: {
+  date: Date;
+  startTime: Date;
+  endTime: Date;
+  active: boolean;
+}) {
+  const existing = await prisma.pickupTimeSlot.findFirst({
+    where: {
+      date: slot.date,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    },
+    select: { id: true },
+  });
+
+  if (existing) {
+    await prisma.pickupTimeSlot.update({
+      where: { id: existing.id },
+      data: { active: slot.active },
+    });
+    return;
+  }
+
+  await prisma.pickupTimeSlot.create({ data: slot });
+}
+
+async function main() {
   const adminName = getRequiredEnv("ADMIN_NAME");
   const adminEmail = getRequiredEnv("ADMIN_EMAIL");
   const adminPassword = getRequiredEnv("ADMIN_PASSWORD");
@@ -51,25 +116,18 @@ async function main() {
   const shopperEmail = process.env.SHOPPER_EMAIL?.trim() || "shopper@example.com";
   const shopperPassword = process.env.SHOPPER_PASSWORD?.trim() || "Shopper123!";
 
-  const passwordHash = await bcrypt.hash(adminPassword, 10);
-  const shopperPasswordHash = await bcrypt.hash(shopperPassword, 10);
-
-  await prisma.user.create({
-    data: {
-      name: adminName,
-      email: adminEmail,
-      passwordHash,
-      role: Role.ADMIN,
-    },
+  await seedUser({
+    name: adminName,
+    email: adminEmail,
+    password: adminPassword,
+    role: Role.ADMIN,
   });
 
-  await prisma.user.create({
-    data: {
-      name: shopperName,
-      email: shopperEmail,
-      passwordHash: shopperPasswordHash,
-      role: Role.USER,
-    },
+  await seedUser({
+    name: shopperName,
+    email: shopperEmail,
+    password: shopperPassword,
+    role: Role.USER,
   });
 
   const products = [
@@ -123,20 +181,19 @@ async function main() {
     },
   ];
 
-  await prisma.product.createMany({
-    data: products.map((product) => ({
-      ...product,
-      slug: slugify(product.name),
-    })),
-  });
+  for (const product of products) {
+    await seedProduct(product);
+  }
 
-  await prisma.pickupTimeSlot.createMany({
-    data: [
-      createSlot("2026-04-15", "10:00", "12:00"),
-      createSlot("2026-04-15", "14:00", "16:00"),
-      createSlot("2026-04-16", "16:00", "18:00"),
-    ],
-  });
+  const pickupSlots = [
+    createSlot("2026-04-15", "10:00", "12:00"),
+    createSlot("2026-04-15", "14:00", "16:00"),
+    createSlot("2026-04-16", "16:00", "18:00"),
+  ];
+
+  for (const slot of pickupSlots) {
+    await seedPickupSlot(slot);
+  }
 }
 
 main()
