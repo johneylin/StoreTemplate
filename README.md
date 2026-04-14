@@ -1,4 +1,4 @@
-# Northstar Commerce
+# J&P
 
 A starter ecommerce website built with the following stack:
 
@@ -92,11 +92,17 @@ A starter ecommerce website built with the following stack:
 
 4. Redeploy.
 
-This project now includes Prisma migrations in [prisma/migrations](./prisma/migrations). Vercel should run `prisma migrate deploy` during build to create/update tables in production.
+This project now includes Prisma migrations in [prisma/migrations](./prisma/migrations). Vercel should run `prisma migrate deploy` during build to create or update tables in production.
+
+## Admin credentials in production
+
+- `ADMIN_EMAIL` and `ADMIN_PASSWORD` are used by the seed script.
+- They are also accepted directly during sign-in, so updating those env vars in Vercel can bootstrap or refresh the admin account on the next successful login.
+- If you also want demo products and pickup windows in production, run the seed once against the production database.
 
 ## Safe production seed
 
-The seed script is now idempotent:
+The seed script is idempotent:
 - users are upserted by email
 - products are upserted by slug
 - pickup windows are created if missing and updated if already present
@@ -127,9 +133,9 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `PICKUP_CITY`: Pickup city
 - `PICKUP_STATE`: Pickup state or province
 - `PICKUP_POSTCODE`: Pickup postal code or ZIP code
-- `ADMIN_NAME`: Seeded admin display name
-- `ADMIN_EMAIL`: Seeded admin login email
-- `ADMIN_PASSWORD`: Seeded admin login password
+- `ADMIN_NAME`: Seeded and auto-synced admin display name
+- `ADMIN_EMAIL`: Seeded and auto-synced admin login email
+- `ADMIN_PASSWORD`: Seeded and auto-synced admin login password
 - `SHOPPER_NAME`: Seeded shopper display name
 - `SHOPPER_EMAIL`: Seeded shopper login email
 - `SHOPPER_PASSWORD`: Seeded shopper login password
@@ -138,9 +144,9 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 
 - Checkout is pickup only.
 - Customers can place guest orders, but they must choose a pickup time and provide either a phone number or an email address.
-- Admins manage available pickup date/time windows from the admin order workspace.
+- Admins manage available pickup date and time windows from the admin order workspace.
 - The order confirmation page shows the payment method, pickup address, pickup time, contact detail, and a short `YYMMxxxxx` order code.
-- Admin product management uses image/video URLs to keep the starter simple and reviewable.
+- Admin product management uses image and video URLs to keep the starter simple and reviewable.
 
 ## Verification run completed here
 

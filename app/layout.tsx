@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { STORE_DESCRIPTION, STORE_NAME } from "@/lib/brand";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -14,8 +15,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Northstar Commerce",
-  description: "Starter ecommerce storefront with Next.js, Prisma, NextAuth, and manual checkout.",
+  title: STORE_NAME,
+  description: STORE_DESCRIPTION,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

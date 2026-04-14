@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { LayoutDashboard, Package, ReceiptText } from "lucide-react";
+import { Package, ReceiptText } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -19,12 +20,10 @@ export function AdminHeader() {
     <header className="border-b border-white/10 bg-slate-950/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-slate-950">
-            <LayoutDashboard className="h-6 w-6" />
-          </div>
+          <BrandLogo className="items-center" />
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Admin workspace</p>
-            <h1 className="font-display text-2xl font-semibold text-white">Northstar Commerce</h1>
+            <p className="mt-1 text-sm text-slate-300">Products, pickup windows, and order status in one place.</p>
           </div>
         </div>
 

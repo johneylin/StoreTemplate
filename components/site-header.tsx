@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { ShoppingBag, UserRound } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
 import { cn } from "@/lib/utils";
 
@@ -22,8 +23,8 @@ export function SiteHeader() {
     <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-4">
         <div className="flex items-center gap-10">
-          <Link href="/" className="font-display text-xl font-semibold tracking-tight text-white">
-            Northstar Commerce
+          <Link href="/" className="transition hover:opacity-90">
+            <BrandLogo />
           </Link>
           <nav className="hidden gap-5 md:flex">
             {links.map((link) => (

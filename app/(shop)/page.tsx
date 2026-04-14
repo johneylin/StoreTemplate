@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ShieldCheck, ShoppingBag, Sparkles } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { getCategories, getFeaturedProducts } from "@/lib/products";
+import { STORE_NAME, STORE_TAGLINE } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +16,15 @@ export default async function HomePage() {
     <div className="pb-20">
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-16 lg:grid-cols-[1.3fr_0.7fr] lg:py-24">
         <div className="rounded-[2.5rem] border border-white/40 bg-slate-950 px-8 py-10 text-white shadow-2xl shadow-slate-900/20 lg:px-12 lg:py-14">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">Customer storefront</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">{STORE_NAME}</p>
           <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold tracking-tight text-balance md:text-7xl">
-            Shop a premium catalog with login, cart, and manual checkout already in place.
+            A polished pickup-first storefront with login, cart, guest checkout, and admin tools already in place.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-            Northstar Commerce gives customers a polished shopping experience with searchable products, protected order history, and a clean checkout flow for pickup or shipping.
+            {STORE_NAME} gives customers a warm, premium shopping experience with searchable products, protected order history, and a checkout flow built around pickup windows and manual payments.
+          </p>
+          <p className="mt-4 max-w-xl text-sm font-medium uppercase tracking-[0.28em] text-amber-200">
+            {STORE_TAGLINE}
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link href="/products" className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
@@ -38,17 +42,17 @@ export default async function HomePage() {
             {
               icon: ShoppingBag,
               title: "Catalog + Cart",
-              description: "Searchable product listing, detail pages, cart quantity updates, and a focused checkout flow.",
+              description: "Searchable product listing, detail pages, cart quantity updates, and a focused pickup checkout flow.",
             },
             {
               icon: ShieldCheck,
               title: "Account + Orders",
-              description: "Credential login, protected order history, structured shipping details, and clear order summaries.",
+              description: "Credential login, protected order history, guest checkout support, and clear order summaries.",
             },
             {
               icon: Sparkles,
               title: "Manual payments",
-              description: "Accept e-transfer or cash orders without a gateway while still tracking every order in PostgreSQL.",
+              description: "Accept e-transfer or cash orders while keeping pickup details and order status organized in PostgreSQL.",
             },
           ].map((item) => (
             <article key={item.title} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">

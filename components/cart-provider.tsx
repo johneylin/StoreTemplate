@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useEffect, useMemo, useState, useContext } from "react";
+import { CART_STORAGE_KEY } from "@/lib/brand";
 
 type CartItem = {
   productId: string;
@@ -16,7 +17,6 @@ type CartContextValue = {
   clearCart: () => void;
 };
 
-const STORAGE_KEY = "northstar-cart";
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [];
     }
 
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(CART_STORAGE_KEY);
     if (!stored) {
       return [];
     }
@@ -33,13 +33,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       return JSON.parse(stored) as CartItem[];
     } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(CART_STORAGE_KEY);
       return [];
     }
   });
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
   const value = useMemo<CartContextValue>(() => ({

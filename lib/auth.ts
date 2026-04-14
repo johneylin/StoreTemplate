@@ -1,7 +1,7 @@
 import type { DefaultSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -11,6 +11,52 @@ const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
+
+function getConfiguredAdmin() {
+  const email = process.env.ADMIN_EMAIL?.trim();
+  const password = process.env.ADMIN_PASSWORD?.trim();
+
+  if (!email || !password) {
+    return null;
+  }
+
+  return {
+    name: process.env.ADMIN_NAME?.trim() || "Admin User",
+    email,
+    password,
+  };
+}
+
+async function resolveConfiguredAdmin(email: string, password: string) {
+  const configuredAdmin = getConfiguredAdmin();
+
+  if (!configuredAdmin || configuredAdmin.email.toLowerCase() !== email.toLowerCase() || configuredAdmin.password !== password) {
+    return null;
+  }
+
+  const passwordHash = await hash(configuredAdmin.password, 10);
+  const adminUser = await db.user.upsert({
+    where: { email: configuredAdmin.email },
+    update: {
+      name: configuredAdmin.name,
+      passwordHash,
+      role: "ADMIN",
+    },
+    create: {
+      name: configuredAdmin.name,
+      email: configuredAdmin.email,
+      passwordHash,
+      role: "ADMIN",
+    },
+  });
+
+  return {
+    id: adminUser.id,
+    email: adminUser.email,
+    name: adminUser.name,
+    role: adminUser.role,
+  };
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
@@ -29,6 +75,11 @@ export const authOptions: NextAuthOptions = {
 
         if (!parsed.success) {
           return null;
+        }
+
+        const configuredAdmin = await resolveConfiguredAdmin(parsed.data.email, parsed.data.password);
+        if (configuredAdmin) {
+          return configuredAdmin;
         }
 
         const user = await db.user.findUnique({
