@@ -11,9 +11,9 @@ type CartItem = {
 type CartContextValue = {
   items: CartItem[];
   count: number;
-  addItem: (productId: string) => void;
+  addItem: (productId: string, minimumQuantity?: number) => void;
   removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  updateQuantity: (productId: string, quantity: number, minimumQuantity?: number) => void;
   clearCart: () => void;
 };
 
@@ -45,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CartContextValue>(() => ({
     items,
     count: items.reduce((sum, item) => sum + item.quantity, 0),
-    addItem(productId) {
+    addItem(productId, minimumQuantity = 1) {
       setItems((current) => {
         const match = current.find((item) => item.productId === productId);
         if (match) {
@@ -56,17 +56,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        return [...current, { productId, quantity: 1 }];
+        return [...current, { productId, quantity: Math.max(1, minimumQuantity) }];
       });
     },
     removeItem(productId) {
       setItems((current) => current.filter((item) => item.productId !== productId));
     },
-    updateQuantity(productId, quantity) {
+    updateQuantity(productId, quantity, minimumQuantity = 1) {
+      const nextQuantity = Math.max(minimumQuantity, quantity);
       setItems((current) =>
         current
           .map((item) =>
-            item.productId === productId ? { ...item, quantity } : item,
+            item.productId === productId ? { ...item, quantity: nextQuantity } : item,
           )
           .filter((item) => item.quantity > 0),
       );

@@ -50,6 +50,7 @@ model Product {
   slug        String      @unique
   description String
   price       Int
+  minimumOrderQuantity Int @default(1)
   category    String
   imageUrl    String
   videoUrl    String?

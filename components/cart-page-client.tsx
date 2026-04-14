@@ -66,6 +66,11 @@ export function CartPageClient({ products }: CartPageClientProps) {
                   {product.name}
                 </Link>
                 <p className="mt-1 text-sm text-slate-500">{formatCurrency(product.price)} each</p>
+                {product.minimumOrderQuantity > 1 ? (
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    Minimum order {product.minimumOrderQuantity}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -73,7 +78,8 @@ export function CartPageClient({ products }: CartPageClientProps) {
               <div className="flex items-center rounded-full border border-slate-200 px-2 py-1">
                 <button
                   type="button"
-                  onClick={() => updateQuantity(product.id, quantity - 1)}
+                  onClick={() => updateQuantity(product.id, quantity - 1, product.minimumOrderQuantity)}
+                  disabled={quantity <= product.minimumOrderQuantity}
                   className="h-9 w-9 rounded-full text-lg font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   -
@@ -81,7 +87,7 @@ export function CartPageClient({ products }: CartPageClientProps) {
                 <span className="w-10 text-center text-sm font-semibold text-slate-950">{quantity}</span>
                 <button
                   type="button"
-                  onClick={() => updateQuantity(product.id, quantity + 1)}
+                  onClick={() => updateQuantity(product.id, quantity + 1, product.minimumOrderQuantity)}
                   className="h-9 w-9 rounded-full text-lg font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   +

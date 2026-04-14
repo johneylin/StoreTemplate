@@ -28,6 +28,11 @@ export function ProductCard({ product }: { product: Product }) {
             {product.name}
           </Link>
           <p className="line-clamp-3 text-sm leading-6 text-slate-600">{product.description}</p>
+          {product.minimumOrderQuantity > 1 ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Minimum order {product.minimumOrderQuantity}
+            </p>
+          ) : null}
         </div>
         <div className="flex gap-3">
           <Link
@@ -36,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
           >
             View details
           </Link>
-          <AddToCartButton productId={product.id} />
+          <AddToCartButton productId={product.id} minimumQuantity={product.minimumOrderQuantity} />
         </div>
       </div>
     </article>

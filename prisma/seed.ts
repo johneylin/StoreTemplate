@@ -63,6 +63,7 @@ async function seedProduct(product: {
   name: string;
   category: string;
   price: number;
+  minimumOrderQuantity: number;
   featured: boolean;
   imageUrl: string;
   description: string;
@@ -132,52 +133,58 @@ async function main() {
 
   const products = [
     {
-      name: "Atlas Trail Jacket",
-      category: "Outerwear",
-      price: 18900,
+      name: "2x4 Pressure-Treated Lumber",
+      category: "Building Materials",
+      price: 1299,
+      minimumOrderQuantity: 8,
       featured: true,
-      imageUrl: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80",
-      description: "Weather-ready shell with a refined technical silhouette for city commutes and weekend escapes.",
+      imageUrl: "https://images.unsplash.com/photo-1513467655676-561b7d489a88?auto=format&fit=crop&w=1200&q=80",
+      description: "Ground-contact pressure-treated framing lumber sized for decks, fence runs, and general outdoor structural work.",
     },
     {
-      name: "Nocturne Leather Tote",
-      category: "Accessories",
-      price: 24000,
+      name: "Galvanized Framing Anchor Pack",
+      category: "Hardware",
+      price: 2199,
+      minimumOrderQuantity: 4,
       featured: true,
-      imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
-      description: "Structured premium tote with interior laptop sleeve and polished hardware details.",
+      imageUrl: "https://images.unsplash.com/photo-1581147036324-c1c9d4f0f8a0?auto=format&fit=crop&w=1200&q=80",
+      description: "Corrosion-resistant framing anchors for joists, trusses, and reinforcement points on indoor and outdoor builds.",
     },
     {
-      name: "Studio Knit Set",
-      category: "Apparel",
-      price: 12500,
+      name: "Contractor Concrete Mix 30kg",
+      category: "Building Materials",
+      price: 899,
+      minimumOrderQuantity: 10,
       featured: true,
-      imageUrl: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=80",
-      description: "Soft matching set designed for effortless styling, travel days, and elevated loungewear.",
+      imageUrl: "https://images.unsplash.com/photo-1597983073540-7d1d1f0d88f1?auto=format&fit=crop&w=1200&q=80",
+      description: "General-purpose concrete blend for pads, footings, fence posts, and repair jobs that need dependable strength on site.",
     },
     {
-      name: "Sierra Weekender",
-      category: "Travel",
-      price: 31000,
+      name: "Impact Driver Bit Set",
+      category: "Tools",
+      price: 3499,
+      minimumOrderQuantity: 1,
       featured: false,
-      imageUrl: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=80",
-      description: "Carry-on friendly duffel with waterproof lining, shoe compartment, and premium canvas shell.",
+      imageUrl: "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=1200&q=80",
+      description: "Shock-resistant impact-rated bit assortment for fastening crews, cabinet installs, and jobsite tool bags.",
     },
     {
-      name: "Luma Desk Lamp",
-      category: "Home",
-      price: 9800,
+      name: "Construction Adhesive Case",
+      category: "Hardware",
+      price: 1599,
+      minimumOrderQuantity: 12,
       featured: false,
-      imageUrl: "https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80",
-      description: "Minimal task lighting with warm dimmable LEDs and a sculptural anodized finish.",
+      imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22731d8a08?auto=format&fit=crop&w=1200&q=80",
+      description: "Heavy-duty adhesive tubes sold by the case for framing, panel installs, and repeated site use.",
     },
     {
-      name: "Pulse Runner",
-      category: "Footwear",
-      price: 14900,
+      name: "Diamond Cutting Wheel 7in",
+      category: "Tools",
+      price: 2799,
+      minimumOrderQuantity: 2,
       featured: false,
-      imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
-      description: "Everyday performance sneaker with responsive cushioning and lightweight knit support.",
+      imageUrl: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=1200&q=80",
+      description: "Long-life cutting wheel for masonry, concrete, and tile work where clean cuts and steady performance matter.",
     },
   ];
 

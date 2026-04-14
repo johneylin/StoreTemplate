@@ -68,15 +68,31 @@ export async function POST(request: Request) {
         return null;
       }
 
+      if (item.quantity < product.minimumOrderQuantity) {
+        return {
+          product,
+          quantity: item.quantity,
+          invalid: true as const,
+        };
+      }
+
       return {
         product,
         quantity: item.quantity,
+        invalid: false as const,
       };
     })
-    .filter(Boolean) as { product: (typeof products)[number]; quantity: number }[];
+    .filter(Boolean) as { product: (typeof products)[number]; quantity: number; invalid: boolean }[];
 
   if (!lineItems.length) {
     return NextResponse.json({ error: "No valid products were found for checkout." }, { status: 400 });
+  }
+
+  const invalidMinimum = lineItems.find((item) => item.invalid);
+  if (invalidMinimum) {
+    return NextResponse.json({
+      error: `${invalidMinimum.product.name} requires a minimum order of ${invalidMinimum.product.minimumOrderQuantity}.`,
+    }, { status: 400 });
   }
 
   const total = lineItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);

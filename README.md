@@ -20,6 +20,7 @@ A starter ecommerce website built with the following stack:
 - Order history page
 - Admin dashboard for product CRUD
 - Admin order workspace with pickup slot management
+- Product minimum order quantity controls
 
 ## Payments
 
@@ -155,6 +156,7 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - Checkout is pickup only.
 - Customers can place guest orders, but they must choose a pickup time and provide either a phone number or an email address.
 - Admins manage available pickup date and time windows from the admin order workspace.
+- Admins can set a minimum order quantity for each product.
 - The order confirmation page shows the payment method, pickup address, pickup time, contact detail, and a short `YYMMxxxxx` order code.
 - Admin product management now supports direct Vercel Blob uploads for images and videos.
 

@@ -46,8 +46,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <div>
             <p className="text-sm text-slate-500">Price</p>
             <p className="font-display text-3xl font-semibold text-slate-950">{formatCurrency(product.price)}</p>
+            {product.minimumOrderQuantity > 1 ? (
+              <p className="mt-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Minimum order {product.minimumOrderQuantity}
+              </p>
+            ) : null}
           </div>
-          <AddToCartButton productId={product.id} />
+          <AddToCartButton productId={product.id} minimumQuantity={product.minimumOrderQuantity} />
         </div>
       </section>
     </div>

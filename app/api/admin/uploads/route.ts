@@ -28,31 +28,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "BLOB_READ_WRITE_TOKEN is not configured." }, { status: 500 });
   }
 
-  const formData = await request.formData();
-  const kind = formData.get("kind");
-  const file = formData.get("file");
+  try {
+    const formData = await request.formData();
+    const kind = formData.get("kind");
+    const file = formData.get("file");
 
-  if ((kind !== "image" && kind !== "video") || !(file instanceof File)) {
-    return NextResponse.json({ error: "Invalid upload request." }, { status: 400 });
+    if (kind !== "image" && kind !== "video") {
+      return NextResponse.json({ error: "Invalid upload type." }, { status: 400 });
+    }
+
+    if (!(file instanceof Blob) || typeof (file as File).arrayBuffer !== "function") {
+      return NextResponse.json({ error: "No file was received for upload." }, { status: 400 });
+    }
+
+    const uploadFile = file as File;
+
+    if (!uploadFile.type.startsWith(`${kind}/`)) {
+      return NextResponse.json({ error: `Please upload a valid ${kind} file.` }, { status: 400 });
+    }
+
+    if (uploadFile.size > maxSizes[kind]) {
+      const maxMegabytes = Math.floor(maxSizes[kind] / (1024 * 1024));
+      return NextResponse.json({ error: `${kind === "image" ? "Image" : "Video"} files must be ${maxMegabytes}MB or smaller.` }, { status: 400 });
+    }
+
+    const filename = sanitizeFilename(uploadFile.name || `${kind}.${uploadFile.type.split("/")[1] || "bin"}`);
+    const pathname = `products/${kind}/${Date.now()}-${filename}`;
+
+    const blob = await put(pathname, uploadFile, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: true,
+      contentType: uploadFile.type,
+    });
+
+    return NextResponse.json({ url: blob.url });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Upload failed.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  if (!file.type.startsWith(`${kind}/`)) {
-    return NextResponse.json({ error: `Please upload a valid ${kind} file.` }, { status: 400 });
-  }
-
-  if (file.size > maxSizes[kind]) {
-    const maxMegabytes = Math.floor(maxSizes[kind] / (1024 * 1024));
-    return NextResponse.json({ error: `${kind === "image" ? "Image" : "Video"} files must be ${maxMegabytes}MB or smaller.` }, { status: 400 });
-  }
-
-  const filename = sanitizeFilename(file.name || `${kind}.${file.type.split("/")[1] || "bin"}`);
-  const pathname = `products/${kind}/${Date.now()}-${filename}`;
-
-  const blob = await put(pathname, file, {
-    access: "public",
-    addRandomSuffix: true,
-    contentType: file.type,
-  });
-
-  return NextResponse.json({ url: blob.url });
 }

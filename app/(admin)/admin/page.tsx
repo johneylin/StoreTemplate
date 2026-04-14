@@ -14,6 +14,7 @@ const productSchema = z.object({
   category: z.string().min(2),
   description: z.string().min(10),
   price: z.coerce.number().int().positive(),
+  minimumOrderQuantity: z.coerce.number().int().positive(),
   imageUrl: z.string().url(),
   videoUrl: z.string().url().optional().or(z.literal("")),
   featured: z.string().optional(),
@@ -31,6 +32,7 @@ async function upsertProduct(formData: FormData) {
     category: parsed.category,
     description: parsed.description,
     price: parsed.price,
+    minimumOrderQuantity: parsed.minimumOrderQuantity,
     imageUrl: parsed.imageUrl,
     videoUrl: parsed.videoUrl || null,
     featured: parsed.featured === "on",
@@ -113,6 +115,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             Price (cents)
             <input name="price" type="number" min="100" step="100" defaultValue={editableProduct?.price ?? 1000} required className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
           </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Minimum order quantity
+            <input
+              name="minimumOrderQuantity"
+              type="number"
+              min="1"
+              step="1"
+              defaultValue={editableProduct?.minimumOrderQuantity ?? 1}
+              required
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            />
+          </label>
           <BlobUploadField
             name="imageUrl"
             label="Product image"
@@ -191,6 +205,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <p className="mt-1 text-sm text-slate-500">
                       {formatCurrency(product.price)}{product.featured ? " - Featured" : ""}
                     </p>
+                    {product.minimumOrderQuantity > 1 ? (
+                      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                        Minimum order {product.minimumOrderQuantity}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">

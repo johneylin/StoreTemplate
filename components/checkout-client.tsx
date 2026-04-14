@@ -113,6 +113,11 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
               <div>
                 <p className="font-medium text-slate-950">{product.name}</p>
                 <p className="text-sm text-slate-500">Qty {quantity}</p>
+                {product.minimumOrderQuantity > 1 ? (
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    Minimum order {product.minimumOrderQuantity}
+                  </p>
+                ) : null}
               </div>
               <p className="font-semibold text-slate-950">{formatCurrency(product.price * quantity)}</p>
             </div>
