@@ -7,6 +7,7 @@ A starter ecommerce website built with the following stack:
 - Tailwind CSS 4
 - Prisma 7 with PostgreSQL
 - NextAuth credentials login
+- Vercel Blob for admin media uploads
 
 ## Included pages
 
@@ -66,13 +67,21 @@ A starter ecommerce website built with the following stack:
 
 6. Open [http://localhost:3000](http://localhost:3000).
 
+## Admin media uploads
+
+- The admin product form can now upload product images and videos directly to Vercel Blob.
+- Uploads require `BLOB_READ_WRITE_TOKEN`.
+- You can still paste a hosted media URL manually if you prefer.
+
 ## Vercel deployment
 
 1. Create a PostgreSQL database and set `DATABASE_URL` in Vercel.
-2. Add these Vercel environment variables:
+2. Create a Vercel Blob store in the same Vercel project.
+3. Add these Vercel environment variables:
    - `DATABASE_URL`
    - `NEXTAUTH_URL`
    - `NEXTAUTH_SECRET`
+   - `BLOB_READ_WRITE_TOKEN`
    - `ETRANSFER_EMAIL`
    - `PICKUP_STREET`
    - `PICKUP_CITY`
@@ -84,13 +93,13 @@ A starter ecommerce website built with the following stack:
    - `SHOPPER_NAME`
    - `SHOPPER_EMAIL`
    - `SHOPPER_PASSWORD`
-3. In Vercel build settings, use:
+4. In Vercel build settings, use:
 
    ```bash
    npm run vercel-build
    ```
 
-4. Redeploy.
+5. Redeploy.
 
 This project now includes Prisma migrations in [prisma/migrations](./prisma/migrations). Vercel should run `prisma migrate deploy` during build to create or update tables in production.
 
@@ -128,6 +137,7 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_URL`: Base URL for NextAuth callbacks
 - `NEXTAUTH_SECRET`: Secret used by NextAuth
+- `BLOB_READ_WRITE_TOKEN`: Vercel Blob read-write token used for admin uploads
 - `ETRANSFER_EMAIL`: Destination email shown for e-transfer payments
 - `PICKUP_STREET`: Pickup street address
 - `PICKUP_CITY`: Pickup city
@@ -146,7 +156,7 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - Customers can place guest orders, but they must choose a pickup time and provide either a phone number or an email address.
 - Admins manage available pickup date and time windows from the admin order workspace.
 - The order confirmation page shows the payment method, pickup address, pickup time, contact detail, and a short `YYMMxxxxx` order code.
-- Admin product management uses image and video URLs to keep the starter simple and reviewable.
+- Admin product management now supports direct Vercel Blob uploads for images and videos.
 
 ## Verification run completed here
 

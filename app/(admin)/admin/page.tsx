@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { BlobUploadField } from "@/components/blob-upload-field";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatCurrency, slugify } from "@/lib/utils";
@@ -112,14 +113,23 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             Price (cents)
             <input name="price" type="number" min="100" step="100" defaultValue={editableProduct?.price ?? 1000} required className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
           </label>
-          <label className="block space-y-2 text-sm font-medium text-slate-700">
-            Image URL
-            <input name="imageUrl" type="url" defaultValue={editableProduct?.imageUrl} required className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
-          </label>
-          <label className="block space-y-2 text-sm font-medium text-slate-700">
-            Video URL (optional)
-            <input name="videoUrl" type="url" defaultValue={editableProduct?.videoUrl ?? ""} className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
-          </label>
+          <BlobUploadField
+            name="imageUrl"
+            label="Product image"
+            kind="image"
+            accept="image/*"
+            required
+            defaultValue={editableProduct?.imageUrl}
+            helperText="Upload an image to Vercel Blob or paste an existing image URL."
+          />
+          <BlobUploadField
+            name="videoUrl"
+            label="Product video (optional)"
+            kind="video"
+            accept="video/*"
+            defaultValue={editableProduct?.videoUrl ?? ""}
+            helperText="Upload a short promo video to Vercel Blob or paste a hosted video URL."
+          />
           <label className="block space-y-2 text-sm font-medium text-slate-700">
             Description
             <textarea name="description" rows={5} defaultValue={editableProduct?.description} required className="w-full rounded-3xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
@@ -179,7 +189,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">{product.category}</p>
                     <h3 className="mt-1 font-display text-xl font-semibold text-slate-950">{product.name}</h3>
                     <p className="mt-1 text-sm text-slate-500">
-                      {formatCurrency(product.price)}{product.featured ? " • Featured" : ""}
+                      {formatCurrency(product.price)}{product.featured ? " - Featured" : ""}
                     </p>
                   </div>
                 </div>
