@@ -57,7 +57,6 @@ export async function POST(request: Request) {
       },
     }),
     db.pickupTimeSlot.findMany({
-      where: { active: true },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
   ]);

@@ -9,7 +9,6 @@ export default async function CheckoutPage() {
   const [products, pickupSlots] = await Promise.all([
     db.product.findMany({ orderBy: { createdAt: "desc" } }),
     db.pickupTimeSlot.findMany({
-      where: { active: true },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
       select: {
         id: true,

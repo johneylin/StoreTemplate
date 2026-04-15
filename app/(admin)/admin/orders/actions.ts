@@ -136,6 +136,7 @@ export async function createPickupSlot(formData: FormData) {
     await db.pickupTimeSlot.update({
       where: { id: parsed.slotId },
       data: {
+        active: true,
         date,
         startTime: start,
         endTime: end,
