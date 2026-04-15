@@ -19,16 +19,16 @@ export function ProductCard({ product }: { product: Product }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />
-      </div>
-      <div className="space-y-4 p-5">
-        <div className="flex items-center justify-between gap-4">
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-900">
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+          <span className="rounded-full bg-amber-100/95 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-900 shadow-sm">
             {product.category}
           </span>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${isComingSoon ? "bg-slate-200 text-slate-700" : isOutOfStock ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-800"}`}>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] shadow-sm ${isComingSoon ? "bg-slate-100/95 text-slate-700" : isOutOfStock ? "bg-rose-100/95 text-rose-700" : "bg-emerald-100/95 text-emerald-800"}`}>
             {isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `In stock ${product.stockQuantity}`}
           </span>
         </div>
+      </div>
+      <div className="space-y-4 p-5">
         <div className="flex items-center justify-between gap-4">
           <span className="text-lg font-semibold text-slate-900">{formatCurrency(product.price)}</span>
         </div>
@@ -36,7 +36,6 @@ export function ProductCard({ product }: { product: Product }) {
           <Link href={`/products/${product.slug}`} className="font-display text-xl font-semibold text-slate-950">
             {product.name}
           </Link>
-          <p className="line-clamp-3 text-sm leading-6 text-slate-600">{product.description}</p>
           {product.minimumOrderQuantity > 1 ? (
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Minimum order {product.minimumOrderQuantity}

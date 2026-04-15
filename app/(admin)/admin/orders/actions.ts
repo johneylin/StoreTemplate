@@ -57,9 +57,61 @@ export async function updateOrderStatus(formData: FormData) {
     ? String(formData.get("returnTo"))
     : "/admin/orders";
 
-  await db.order.update({
-    where: { id: parsed.orderId },
-    data: { status: parsed.status },
+  await db.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: parsed.orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      return;
+    }
+
+    if (order.status === parsed.status) {
+      return;
+    }
+
+    if (order.status !== "CANCELED" && parsed.status === "CANCELED") {
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stockQuantity: {
+              increment: item.quantity,
+            },
+          },
+        });
+      }
+    }
+
+    if (order.status === "CANCELED" && parsed.status !== "CANCELED") {
+      for (const item of order.items) {
+        const updated = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            stockQuantity: {
+              gte: item.quantity,
+            },
+          },
+          data: {
+            stockQuantity: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        if (updated.count !== 1) {
+          throw new Error("One or more items no longer have enough stock to restore this order from canceled status.");
+        }
+      }
+    }
+
+    await tx.order.update({
+      where: { id: parsed.orderId },
+      data: { status: parsed.status },
+    });
   });
 
   revalidatePath("/admin/orders");
