@@ -194,15 +194,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700">
-            Product status
+            Availability
             <select
               name="availability"
               defaultValue={editableProduct?.availability ?? ProductAvailability.ACTIVE}
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
             >
-              <option value={ProductAvailability.ACTIVE}>Active</option>
-              <option value={ProductAvailability.COMING_SOON}>Coming soon</option>
+              <option value={ProductAvailability.ACTIVE}>Active - available to buy</option>
+              <option value={ProductAvailability.COMING_SOON}>Coming soon - view only</option>
             </select>
+            <p className="text-xs leading-5 text-slate-500">
+              Set a product to <strong>Coming soon</strong> to show it in the catalog without allowing customers to add it to cart or check out.
+            </p>
           </label>
           <BlobUploadField
             name="imageUrl"
