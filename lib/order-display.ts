@@ -132,7 +132,6 @@ export function isPickupDateTimeWithinSlot(value: string, slot: {
 }
 
 export function formatPickupSlotLabel(slot: {
-  date: Date;
   startTime: Date;
   endTime: Date;
 }) {
@@ -142,7 +141,7 @@ export function formatPickupSlotLabel(slot: {
     month: "2-digit",
     day: "2-digit",
     timeZone: PICKUP_DISPLAY_TIME_ZONE,
-  }).format(slot.date);
+  }).format(slot.startTime);
 
   return `${dateLabel} ${formatPickupSlotRange(slot.startTime, slot.endTime)}`;
 }

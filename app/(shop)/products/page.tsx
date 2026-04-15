@@ -33,7 +33,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <ProductSearch query={query} category={category} categories={categories} />
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {products.length ? (
           products.map((product) => <ProductCard key={product.id} product={product} />)
         ) : (
