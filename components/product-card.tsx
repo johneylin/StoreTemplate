@@ -10,7 +10,12 @@ export function ProductCard({ product }: { product: Product }) {
   const canBuy = !isComingSoon && !isOutOfStock;
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+    <article className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+      <Link
+        href={`/products/${product.slug}`}
+        aria-label={`View details for ${product.name}`}
+        className="absolute inset-0 z-10"
+      />
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
         <Image
           src={product.imageUrl}
@@ -19,7 +24,7 @@ export function ProductCard({ product }: { product: Product }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
           <span className="rounded-full bg-amber-100/95 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-900 shadow-sm">
             {product.category}
           </span>
@@ -27,12 +32,24 @@ export function ProductCard({ product }: { product: Product }) {
             {isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `In stock ${product.stockQuantity}`}
           </span>
         </div>
+        <div className="absolute bottom-4 right-4 z-20 pointer-events-auto">
+          <AddToCartButton
+            productId={product.id}
+            minimumQuantity={product.minimumOrderQuantity}
+            disabled={!canBuy}
+            iconOnly
+            ariaLabel={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `Add ${product.name} to cart`}
+            className={`h-11 w-11 border border-white/60 bg-white/95 text-slate-950 shadow-lg transition duration-300 group-hover:-translate-y-1 group-hover:scale-105 hover:bg-amber-300 active:scale-95 disabled:border-slate-200 disabled:bg-white/80 disabled:text-slate-500 ${
+              canBuy ? "animate-in fade-in zoom-in-95" : ""
+            }`}
+          />
+        </div>
       </div>
-      <div className="space-y-3 p-4 sm:p-5">
+      <div className="pointer-events-none relative z-20 space-y-2 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <Link href={`/products/${product.slug}`} className="line-clamp-2 font-display text-lg font-semibold leading-6 text-slate-950 sm:text-xl">
+          <p className="line-clamp-2 font-display text-lg font-semibold leading-6 text-slate-950 sm:text-xl">
             {product.name}
-          </Link>
+          </p>
           <span className="shrink-0 text-base font-semibold text-slate-900 sm:text-lg">{formatCurrency(product.price)}</span>
         </div>
         <div className="space-y-1.5">
@@ -41,21 +58,6 @@ export function ProductCard({ product }: { product: Product }) {
               Minimum order {product.minimumOrderQuantity}
             </p>
           ) : null}
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href={`/products/${product.slug}`}
-            className="flex-1 rounded-full border border-slate-200 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
-          >
-            View details
-          </Link>
-          <AddToCartButton
-            productId={product.id}
-            minimumQuantity={product.minimumOrderQuantity}
-            disabled={!canBuy}
-            label={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : undefined}
-            className="min-w-0 px-3 py-2.5 text-sm"
-          />
         </div>
       </div>
     </article>
