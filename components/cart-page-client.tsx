@@ -31,6 +31,22 @@ export function CartPageClient({ products }: CartPageClientProps) {
     (sum, item) => sum + item.product.price * item.quantity,
     0,
   );
+  const cartIssues = lineItems.flatMap(({ product, quantity }) => {
+    if (product.availability === "COMING_SOON") {
+      return [`${product.name} is coming soon and cannot be purchased yet.`];
+    }
+
+    if (product.stockQuantity <= 0) {
+      return [`${product.name} is out of stock.`];
+    }
+
+    if (quantity > product.stockQuantity) {
+      return [`${product.name} only has ${product.stockQuantity} in stock, but your cart has ${quantity}.`];
+    }
+
+    return [];
+  });
+  const hasCartIssues = cartIssues.length > 0;
 
   if (!lineItems.length) {
     return (
@@ -50,6 +66,13 @@ export function CartPageClient({ products }: CartPageClientProps) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1.6fr_0.8fr]">
       <div className="space-y-4">
+        {hasCartIssues ? (
+          <div className="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
+            {cartIssues.map((issue) => (
+              <p key={issue}>{issue}</p>
+            ))}
+          </div>
+        ) : null}
         {lineItems.map(({ product, quantity }) => (
           <article key={product.id} className="flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
@@ -131,7 +154,12 @@ export function CartPageClient({ products }: CartPageClientProps) {
           </div>
           <Link
             href="/checkout"
-            className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-amber-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300"
+            aria-disabled={hasCartIssues}
+            className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition ${
+              hasCartIssues
+                ? "pointer-events-none bg-slate-200 text-slate-500"
+                : "bg-amber-400 text-slate-950 hover:bg-amber-300"
+            }`}
           >
             Proceed to checkout
           </Link>

@@ -46,6 +46,22 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
 
   const total = lineItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const hasPickupContact = Boolean(pickupPhone.trim() || pickupEmail.trim());
+  const stockIssues = lineItems.flatMap(({ product, quantity }) => {
+    if (product.availability === "COMING_SOON") {
+      return [`${product.name} is coming soon and cannot be ordered yet.`];
+    }
+
+    if (product.stockQuantity <= 0) {
+      return [`${product.name} is out of stock.`];
+    }
+
+    if (quantity > product.stockQuantity) {
+      return [`${product.name} only has ${product.stockQuantity} in stock, but your cart has ${quantity}.`];
+    }
+
+    return [];
+  });
+  const hasStockIssues = stockIssues.length > 0;
 
   useEffect(() => {
     if (!pickupEmail && session?.user?.email) {
@@ -109,6 +125,13 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
         </p>
 
         <div className="mt-8 space-y-4">
+          {hasStockIssues ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-sm font-medium text-rose-700">
+              {stockIssues.map((issue) => (
+                <p key={issue}>{issue}</p>
+              ))}
+            </div>
+          ) : null}
           {lineItems.map(({ product, quantity }) => (
             <div key={product.id} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
               <div>
@@ -228,7 +251,7 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
         {error ? <p className="mt-4 text-sm font-medium text-rose-600">{error}</p> : null}
         <button
           type="button"
-          disabled={pending || !pickupSlots.length || !pickupDateTime || !hasPickupContact}
+          disabled={pending || !pickupSlots.length || !pickupDateTime || !hasPickupContact || hasStockIssues}
           onClick={handleCheckout}
           className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >

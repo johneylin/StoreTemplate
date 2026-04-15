@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -23,6 +24,7 @@ const statusSchema = z.object({
 });
 
 const pickupSlotSchema = z.object({
+  slotId: z.string().optional(),
   date: z.string().min(1),
   startTime: z.string().min(1),
   endTime: z.string().min(1),
@@ -48,9 +50,8 @@ const pickupSlotSchema = z.object({
   }
 });
 
-const pickupSlotToggleSchema = z.object({
+const pickupSlotCopySchema = z.object({
   slotId: z.string().min(1),
-  nextActive: z.enum(["true", "false"]),
 });
 
 async function updateOrderStatus(formData: FormData) {
@@ -78,11 +79,57 @@ async function createPickupSlot(formData: FormData) {
   const end = new Date(`${parsed.date}T${parsed.endTime}:00`);
   const date = new Date(`${parsed.date}T00:00:00`);
 
+  if (parsed.slotId) {
+    await db.pickupTimeSlot.update({
+      where: { id: parsed.slotId },
+      data: {
+        date,
+        startTime: start,
+        endTime: end,
+      },
+    });
+  } else {
+    await db.pickupTimeSlot.create({
+      data: {
+        date,
+        startTime: start,
+        endTime: end,
+        active: true,
+      },
+    });
+  }
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/checkout");
+}
+
+async function copyPickupSlotToNextWeek(formData: FormData) {
+  "use server";
+
+  await requireAdmin();
+  const parsed = pickupSlotCopySchema.parse(Object.fromEntries(formData));
+  const slot = await db.pickupTimeSlot.findUnique({
+    where: { id: parsed.slotId },
+  });
+
+  if (!slot) {
+    return;
+  }
+
+  const nextDate = new Date(slot.date);
+  nextDate.setDate(nextDate.getDate() + 7);
+
+  const nextStart = new Date(slot.startTime);
+  nextStart.setDate(nextStart.getDate() + 7);
+
+  const nextEnd = new Date(slot.endTime);
+  nextEnd.setDate(nextEnd.getDate() + 7);
+
   await db.pickupTimeSlot.create({
     data: {
-      date,
-      startTime: start,
-      endTime: end,
+      date: nextDate,
+      startTime: nextStart,
+      endTime: nextEnd,
       active: true,
     },
   });
@@ -91,27 +138,17 @@ async function createPickupSlot(formData: FormData) {
   revalidatePath("/checkout");
 }
 
-async function togglePickupSlot(formData: FormData) {
-  "use server";
-
-  await requireAdmin();
-  const parsed = pickupSlotToggleSchema.parse(Object.fromEntries(formData));
-
-  await db.pickupTimeSlot.update({
-    where: { id: parsed.slotId },
-    data: { active: parsed.nextActive === "true" },
-  });
-
-  revalidatePath("/admin/orders");
-  revalidatePath("/checkout");
-}
-
 export const dynamic = "force-dynamic";
 
-export default async function AdminOrdersPage() {
+type AdminOrdersPageProps = {
+  searchParams: Promise<{ slot?: string }>;
+};
+
+export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
   await requireAdmin();
+  const params = await searchParams;
   const pickupAddress = formatAddress(getPickupAddress());
-  const [orders, pickupSlots] = await Promise.all([
+  const [orders, pickupSlots, editableSlot] = await Promise.all([
     db.order.findMany({
       include: {
         user: {
@@ -129,8 +166,9 @@ export default async function AdminOrdersPage() {
       orderBy: { createdAt: "desc" },
     }),
     db.pickupTimeSlot.findMany({
-      orderBy: [{ active: "desc" }, { date: "asc" }, { startTime: "asc" }],
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
+    params.slot ? db.pickupTimeSlot.findUnique({ where: { id: params.slot } }) : Promise.resolve(null),
   ]);
 
   return (
@@ -146,14 +184,24 @@ export default async function AdminOrdersPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Pickup time management</p>
             <h2 className="mt-3 font-display text-3xl font-semibold text-slate-950">Set available pickup dates and times</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Create actual pickup windows customers can select during checkout. Disable any slot when it should no longer appear.
+              Create actual pickup windows customers can select during checkout. Edit an existing slot or copy it to the same time next week.
             </p>
+            {editableSlot ? (
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                <span>Editing {formatPickupSlotLabel(editableSlot)}</span>
+                <Link href="/admin/orders" className="font-semibold text-slate-950">
+                  Clear
+                </Link>
+              </div>
+            ) : null}
             <form action={createPickupSlot} className="mt-6 grid gap-3 sm:grid-cols-2">
+              <input type="hidden" name="slotId" value={editableSlot?.id ?? ""} />
               <label className="block space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
                 Pickup date
                 <input
                   type="date"
                   name="date"
+                  defaultValue={editableSlot ? editableSlot.date.toISOString().slice(0, 10) : ""}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
                 />
               </label>
@@ -162,6 +210,7 @@ export default async function AdminOrdersPage() {
                 <input
                   type="time"
                   name="startTime"
+                  defaultValue={editableSlot ? editableSlot.startTime.toISOString().slice(11, 16) : ""}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
                 />
               </label>
@@ -170,11 +219,12 @@ export default async function AdminOrdersPage() {
                 <input
                   type="time"
                   name="endTime"
+                  defaultValue={editableSlot ? editableSlot.endTime.toISOString().slice(11, 16) : ""}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
                 />
               </label>
               <button className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:col-span-2">
-                Add pickup window
+                {editableSlot ? "Save pickup window" : "Add pickup window"}
               </button>
             </form>
           </div>
@@ -185,17 +235,19 @@ export default async function AdminOrdersPage() {
                 <article key={slot.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <p className="font-medium text-slate-950">{formatPickupSlotLabel(slot)}</p>
-                    <p className="mt-1 text-sm text-slate-500">{slot.active ? "Visible in checkout" : "Hidden from checkout"}</p>
+                    <p className="mt-1 text-sm text-slate-500">Available in checkout</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${slot.active ? "bg-emerald-100 text-emerald-900" : "bg-slate-200 text-slate-700"}`}>
-                      {slot.active ? "Active" : "Inactive"}
-                    </span>
-                    <form action={togglePickupSlot}>
+                    <Link
+                      href={`/admin/orders?slot=${slot.id}`}
+                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
+                    >
+                      Edit
+                    </Link>
+                    <form action={copyPickupSlotToNextWeek}>
                       <input type="hidden" name="slotId" value={slot.id} />
-                      <input type="hidden" name="nextActive" value={slot.active ? "false" : "true"} />
                       <button className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950">
-                        {slot.active ? "Disable" : "Enable"}
+                        Copy to next week
                       </button>
                     </form>
                   </div>
