@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { Prisma } from "@/generated/prisma/client";
 import { BlobUploadField } from "@/components/blob-upload-field";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -39,7 +40,15 @@ async function upsertProduct(formData: FormData) {
   "use server";
 
   await requireAdmin();
-  const parsed = productSchema.parse(Object.fromEntries(formData));
+  const rawValues = Object.fromEntries(formData);
+  const parsed = productSchema.safeParse(rawValues);
+
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Please check the product details and try again.";
+    const edit = typeof rawValues.id === "string" && rawValues.id ? `?edit=${rawValues.id}&error=${encodeURIComponent(message)}` : `?error=${encodeURIComponent(message)}`;
+    redirect(`/admin${edit}`);
+  }
+
   const slug = slugify(parsed.name);
 
   const data = {
@@ -54,13 +63,24 @@ async function upsertProduct(formData: FormData) {
     slug,
   };
 
-  if (parsed.id) {
-    await db.product.update({
-      where: { id: parsed.id },
-      data,
-    });
-  } else {
-    await db.product.create({ data });
+  try {
+    if (parsed.id) {
+      await db.product.update({
+        where: { id: parsed.id },
+        data,
+      });
+    } else {
+      await db.product.create({ data });
+    }
+  } catch (error) {
+    let message = "Unable to save product right now.";
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      message = "A product with this name already exists. Please use a different product name.";
+    }
+
+    const edit = parsed.id ? `?edit=${parsed.id}&error=${encodeURIComponent(message)}` : `?error=${encodeURIComponent(message)}`;
+    redirect(`/admin${edit}`);
   }
 
   revalidatePath("/");
@@ -85,7 +105,7 @@ async function removeProduct(formData: FormData) {
 }
 
 type AdminPageProps = {
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; error?: string }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -115,6 +135,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             </Link>
           ) : null}
         </div>
+
+        {params.error ? (
+          <div className="mt-6 rounded-[1.5rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+            {params.error}
+          </div>
+        ) : null}
 
         <form action={upsertProduct} className="mt-6 space-y-4">
           <input type="hidden" name="id" defaultValue={editableProduct?.id} />
