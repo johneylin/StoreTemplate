@@ -25,11 +25,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     <div className="mx-auto w-full max-w-7xl px-6 py-12 pb-20">
       <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Product catalog</p>
-        <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight text-slate-950">Find the products your customers are already looking for.</h1>
-        <p className="mt-4 text-lg leading-8 text-slate-600">Search by keyword, narrow by category, and browse a seeded catalog backed by Prisma and PostgreSQL.</p>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <ProductSearch query={query} category={category} categories={categories} />
       </div>
 
