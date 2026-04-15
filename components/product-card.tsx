@@ -24,13 +24,13 @@ export function ProductCard({ product }: { product: Product }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />
-        <div className="pointer-events-none absolute left-3 top-3 z-20 sm:left-4 sm:top-4">
-          <span className="rounded-full bg-amber-100/95 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-amber-900 shadow-sm sm:text-xs">
+        <div className="pointer-events-none absolute left-2 top-2 z-20 sm:left-4 sm:top-4">
+          <span className="rounded-full bg-amber-100/95 px-2 py-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.16em] text-amber-900 shadow-sm sm:px-2.5 sm:py-0.5 sm:text-[0.62rem]">
             {product.category}
           </span>
         </div>
-        <div className="pointer-events-none absolute right-3 top-3 z-20 sm:right-4 sm:top-4">
-          <span className={`inline-flex max-w-[8.5rem] rounded-full px-3 py-1 text-center text-[0.65rem] font-semibold uppercase tracking-[0.16em] shadow-sm sm:max-w-none sm:text-xs ${isComingSoon ? "bg-slate-100/95 text-slate-700" : isOutOfStock ? "bg-rose-100/95 text-rose-700" : "bg-emerald-100/95 text-emerald-800"}`}>
+        <div className="pointer-events-none absolute right-2 top-2 z-20 sm:right-4 sm:top-4">
+          <span className={`inline-flex max-w-[5.75rem] rounded-full px-2 py-0.5 text-center text-[0.48rem] font-semibold uppercase tracking-[0.12em] shadow-sm sm:max-w-[7.5rem] sm:px-2.5 sm:py-0.5 sm:text-[0.62rem] ${isComingSoon ? "bg-slate-100/95 text-slate-700" : isOutOfStock ? "bg-rose-100/95 text-rose-700" : "bg-emerald-100/95 text-emerald-800"}`}>
             {isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `In stock ${product.stockQuantity}`}
           </span>
         </div>
@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
             disabled={!canBuy}
             iconOnly
             ariaLabel={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `Add ${product.name} to cart`}
-            className={`h-11 w-11 border border-slate-950/10 bg-slate-950/88 text-white shadow-lg shadow-slate-950/30 backdrop-blur-sm transition duration-300 group-hover:-translate-y-1 group-hover:scale-105 hover:bg-amber-400 hover:text-slate-950 active:scale-95 disabled:border-white/30 disabled:bg-white/85 disabled:text-slate-500 ${
+            className={`group h-11 w-11 overflow-hidden border border-white/60 bg-white/95 px-0 text-slate-950 shadow-lg transition duration-300 hover:w-28 hover:-translate-x-1 hover:bg-amber-300 focus-visible:w-28 focus-visible:-translate-x-1 focus-visible:bg-amber-300 active:scale-95 disabled:border-slate-200 disabled:bg-white/80 disabled:text-slate-500 ${
               canBuy ? "animate-in fade-in zoom-in-95" : ""
             }`}
           />
@@ -49,14 +49,14 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="pointer-events-none relative z-20 space-y-2 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="line-clamp-2 font-display text-lg font-semibold leading-6 text-slate-950 sm:text-xl">
+          <p className="font-display text-sm font-semibold leading-5 text-slate-950 sm:text-base sm:leading-6 lg:text-lg">
             {product.name}
           </p>
           <span className="shrink-0 text-base font-semibold text-slate-900 sm:text-lg">{formatCurrency(product.price)}</span>
         </div>
         <div className="space-y-1.5">
           {product.minimumOrderQuantity > 1 ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:text-[0.6rem]">
               Minimum order {product.minimumOrderQuantity}
             </p>
           ) : null}

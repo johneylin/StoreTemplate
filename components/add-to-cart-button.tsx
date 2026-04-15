@@ -50,7 +50,12 @@ export function AddToCartButton({
       {pending ? (
         <LoaderCircle className="h-4 w-4 animate-spin" />
       ) : iconOnly ? (
-        <ShoppingBag className="h-4 w-4" />
+        <>
+          <ShoppingBag className="h-4 w-4 shrink-0" />
+          <span className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-semibold uppercase tracking-[0.18em] opacity-0 transition-all duration-300 group-hover:max-w-24 group-hover:opacity-100 group-focus-visible:max-w-24 group-focus-visible:opacity-100">
+            Add
+          </span>
+        </>
       ) : null}
       {!iconOnly ? (label ?? (minimumQuantity > 1 ? `Add ${minimumQuantity}+ to cart` : "Add to cart")) : null}
     </button>
