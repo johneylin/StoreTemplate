@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -42,12 +43,19 @@ const pickupSlotCopySchema = z.object({
   slotId: z.string().min(1),
 });
 
+const pickupSlotDeleteSchema = z.object({
+  slotId: z.string().min(1),
+});
+
 export async function updateOrderStatus(formData: FormData) {
   await requireAdmin();
   const parsed = statusSchema.parse({
     orderId: formData.get("orderId"),
     status: formData.get("status"),
   });
+  const returnTo = typeof formData.get("returnTo") === "string" && formData.get("returnTo")
+    ? String(formData.get("returnTo"))
+    : "/admin/orders";
 
   await db.order.update({
     where: { id: parsed.orderId },
@@ -57,6 +65,7 @@ export async function updateOrderStatus(formData: FormData) {
   revalidatePath("/admin/orders");
   revalidatePath("/orders");
   revalidatePath("/checkout/success");
+  redirect(returnTo);
 }
 
 export async function createPickupSlot(formData: FormData) {
@@ -124,6 +133,20 @@ export async function copyPickupSlotToNextWeek(formData: FormData) {
       endTime: nextEnd,
       active: true,
     },
+  });
+
+  revalidatePath("/admin/pickup");
+  revalidatePath("/checkout");
+}
+
+export async function deletePickupSlot(formData: FormData) {
+  await requireAdmin();
+  const parsed = pickupSlotDeleteSchema.parse({
+    slotId: formData.get("slotId"),
+  });
+
+  await db.pickupTimeSlot.delete({
+    where: { id: parsed.slotId },
   });
 
   revalidatePath("/admin/pickup");

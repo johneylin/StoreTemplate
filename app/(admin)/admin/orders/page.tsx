@@ -28,6 +28,17 @@ export const dynamic = "force-dynamic";
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
   await requireAdmin();
   const params = await searchParams;
+  const returnToParams = new URLSearchParams();
+  if (params.status) {
+    returnToParams.set("status", params.status);
+  }
+  if (params.payment) {
+    returnToParams.set("payment", params.payment);
+  }
+  if (params.search) {
+    returnToParams.set("search", params.search);
+  }
+  const returnTo = returnToParams.size ? `/admin/orders?${returnToParams.toString()}` : "/admin/orders";
   const pickupAddress = formatAddress(getPickupAddress());
   const statusFilter = orderStatusOptions.includes(params.status as (typeof orderStatusOptions)[number])
     ? (params.status as (typeof orderStatusOptions)[number])
@@ -163,7 +174,8 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
               <form action={updateOrderStatus} className="rounded-2xl bg-slate-50 p-4 xl:min-w-56">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Mark status</p>
                 <input type="hidden" name="orderId" value={order.id} />
-                <select name="status" defaultValue={order.status} className="mt-3 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-slate-950">
+                <input type="hidden" name="returnTo" value={returnTo} />
+                <select key={`${order.id}-${order.status}`} name="status" defaultValue={order.status} className="mt-3 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-slate-950">
                   {orderStatusOptions.map((status) => (
                     <option key={status} value={status}>{orderStatusLabels[status]}</option>
                   ))}

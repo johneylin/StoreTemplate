@@ -6,7 +6,7 @@ import {
   formatPickupSlotLabel,
   formatPickupTimeInputValue,
 } from "@/lib/order-display";
-import { copyPickupSlotToNextWeek, createPickupSlot } from "../orders/actions";
+import { copyPickupSlotToNextWeek, createPickupSlot, deletePickupSlot } from "../orders/actions";
 
 type AdminPickupPageProps = {
   searchParams: Promise<{ slot?: string }>;
@@ -101,6 +101,12 @@ export default async function AdminPickupPage({ searchParams }: AdminPickupPageP
                       <input type="hidden" name="slotId" value={slot.id} />
                       <button type="submit" className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950">
                         Copy to next week
+                      </button>
+                    </form>
+                    <form action={deletePickupSlot}>
+                      <input type="hidden" name="slotId" value={slot.id} />
+                      <button type="submit" className="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50">
+                        Delete
                       </button>
                     </form>
                   </div>
