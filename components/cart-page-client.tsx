@@ -66,6 +66,9 @@ export function CartPageClient({ products }: CartPageClientProps) {
                   {product.name}
                 </Link>
                 <p className="mt-1 text-sm text-slate-500">{formatCurrency(product.price)} each</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  {product.availability === "COMING_SOON" ? "Coming soon" : `In stock ${product.stockQuantity}`}
+                </p>
                 {product.minimumOrderQuantity > 1 ? (
                   <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                     Minimum order {product.minimumOrderQuantity}
@@ -88,6 +91,7 @@ export function CartPageClient({ products }: CartPageClientProps) {
                 <button
                   type="button"
                   onClick={() => updateQuantity(product.id, quantity + 1, product.minimumOrderQuantity)}
+                  disabled={product.availability === "COMING_SOON" || quantity >= product.stockQuantity}
                   className="h-9 w-9 rounded-full text-lg font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   +

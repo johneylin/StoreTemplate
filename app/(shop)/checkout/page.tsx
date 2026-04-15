@@ -1,6 +1,6 @@
 import { CheckoutClient } from "@/components/checkout-client";
 import { db } from "@/lib/db";
-import { formatPickupSlotLabel } from "@/lib/order-display";
+import { formatPickupSlotInputValue, formatPickupSlotLabel } from "@/lib/order-display";
 import { formatAddress, getPickupAddress } from "@/lib/store-config";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +29,7 @@ export default async function CheckoutPage() {
         pickupSlots={pickupSlots.map((slot) => ({
           id: slot.id,
           label: formatPickupSlotLabel(slot),
+          value: formatPickupSlotInputValue(slot),
         }))}
       />
     </div>

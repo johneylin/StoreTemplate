@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, Role } from "../generated/prisma/client";
+import { PrismaClient, ProductAvailability, Role } from "../generated/prisma/client";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -64,6 +64,8 @@ async function seedProduct(product: {
   category: string;
   price: number;
   minimumOrderQuantity: number;
+  stockQuantity: number;
+  availability: ProductAvailability;
   featured: boolean;
   imageUrl: string;
   description: string;
@@ -137,6 +139,8 @@ async function main() {
       category: "Building Materials",
       price: 1299,
       minimumOrderQuantity: 8,
+      stockQuantity: 320,
+      availability: ProductAvailability.ACTIVE,
       featured: true,
       imageUrl: "https://images.unsplash.com/photo-1513467655676-561b7d489a88?auto=format&fit=crop&w=1200&q=80",
       description: "Ground-contact pressure-treated framing lumber sized for decks, fence runs, and general outdoor structural work.",
@@ -146,6 +150,8 @@ async function main() {
       category: "Hardware",
       price: 2199,
       minimumOrderQuantity: 4,
+      stockQuantity: 96,
+      availability: ProductAvailability.ACTIVE,
       featured: true,
       imageUrl: "https://images.unsplash.com/photo-1581147036324-c1c9d4f0f8a0?auto=format&fit=crop&w=1200&q=80",
       description: "Corrosion-resistant framing anchors for joists, trusses, and reinforcement points on indoor and outdoor builds.",
@@ -155,6 +161,8 @@ async function main() {
       category: "Building Materials",
       price: 899,
       minimumOrderQuantity: 10,
+      stockQuantity: 180,
+      availability: ProductAvailability.ACTIVE,
       featured: true,
       imageUrl: "https://images.unsplash.com/photo-1597983073540-7d1d1f0d88f1?auto=format&fit=crop&w=1200&q=80",
       description: "General-purpose concrete blend for pads, footings, fence posts, and repair jobs that need dependable strength on site.",
@@ -164,6 +172,8 @@ async function main() {
       category: "Tools",
       price: 3499,
       minimumOrderQuantity: 1,
+      stockQuantity: 42,
+      availability: ProductAvailability.ACTIVE,
       featured: false,
       imageUrl: "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=1200&q=80",
       description: "Shock-resistant impact-rated bit assortment for fastening crews, cabinet installs, and jobsite tool bags.",
@@ -173,6 +183,8 @@ async function main() {
       category: "Hardware",
       price: 1599,
       minimumOrderQuantity: 12,
+      stockQuantity: 65,
+      availability: ProductAvailability.ACTIVE,
       featured: false,
       imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22731d8a08?auto=format&fit=crop&w=1200&q=80",
       description: "Heavy-duty adhesive tubes sold by the case for framing, panel installs, and repeated site use.",
@@ -182,6 +194,8 @@ async function main() {
       category: "Tools",
       price: 2799,
       minimumOrderQuantity: 2,
+      stockQuantity: 0,
+      availability: ProductAvailability.COMING_SOON,
       featured: false,
       imageUrl: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=1200&q=80",
       description: "Long-life cutting wheel for masonry, concrete, and tile work where clean cuts and steady performance matter.",

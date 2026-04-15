@@ -5,6 +5,10 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { formatCurrency } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
+  const isComingSoon = product.availability === "COMING_SOON";
+  const isOutOfStock = product.stockQuantity <= 0;
+  const canBuy = !isComingSoon && !isOutOfStock;
+
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
@@ -21,6 +25,11 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-amber-900">
             {product.category}
           </span>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${isComingSoon ? "bg-slate-200 text-slate-700" : isOutOfStock ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-800"}`}>
+            {isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `In stock ${product.stockQuantity}`}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
           <span className="text-lg font-semibold text-slate-900">{formatCurrency(product.price)}</span>
         </div>
         <div className="space-y-2">
@@ -41,7 +50,12 @@ export function ProductCard({ product }: { product: Product }) {
           >
             View details
           </Link>
-          <AddToCartButton productId={product.id} minimumQuantity={product.minimumOrderQuantity} />
+          <AddToCartButton
+            productId={product.id}
+            minimumQuantity={product.minimumOrderQuantity}
+            disabled={!canBuy}
+            label={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : undefined}
+          />
         </div>
       </div>
     </article>

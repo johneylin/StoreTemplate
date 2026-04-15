@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, ProductAvailability } from "@/generated/prisma/client";
 import { BlobUploadField } from "@/components/blob-upload-field";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -31,6 +31,8 @@ const productSchema = z.object({
   description: z.string().min(10),
   price: z.coerce.number().positive(),
   minimumOrderQuantity: z.coerce.number().int().positive(),
+  stockQuantity: z.coerce.number().int().min(0),
+  availability: z.nativeEnum(ProductAvailability),
   imageUrl: mediaUrlSchema,
   videoUrl: z.union([mediaUrlSchema, z.literal("")]).optional(),
   featured: z.string().optional(),
@@ -58,6 +60,8 @@ async function upsertProduct(formData: FormData) {
     description: values.description,
     price: Math.round(values.price * 100),
     minimumOrderQuantity: values.minimumOrderQuantity,
+    stockQuantity: values.stockQuantity,
+    availability: values.availability,
     imageUrl: values.imageUrl,
     videoUrl: values.videoUrl || null,
     featured: values.featured === "on",
@@ -177,6 +181,29 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
             />
           </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Stock quantity
+            <input
+              name="stockQuantity"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={editableProduct?.stockQuantity ?? 0}
+              required
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            />
+          </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Product status
+            <select
+              name="availability"
+              defaultValue={editableProduct?.availability ?? ProductAvailability.ACTIVE}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            >
+              <option value={ProductAvailability.ACTIVE}>Active</option>
+              <option value={ProductAvailability.COMING_SOON}>Coming soon</option>
+            </select>
+          </label>
           <BlobUploadField
             name="imageUrl"
             label="Product image"
@@ -254,6 +281,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <h3 className="mt-1 font-display text-xl font-semibold text-slate-950">{product.name}</h3>
                     <p className="mt-1 text-sm text-slate-500">
                       {formatCurrency(product.price)}{product.featured ? " - Featured" : ""}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      {product.availability === ProductAvailability.COMING_SOON ? "Coming soon" : `In stock ${product.stockQuantity}`}
                     </p>
                     {product.minimumOrderQuantity > 1 ? (
                       <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">

@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 type PickupSlot = {
   id: string;
   label: string;
+  value: string;
 };
 
 type CheckoutClientProps = {
@@ -30,7 +31,7 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("E_TRANSFER");
   const [pickupPhone, setPickupPhone] = useState("");
   const [pickupEmail, setPickupEmail] = useState("");
-  const [pickupTimeSlotId, setPickupTimeSlotId] = useState("");
+  const [pickupDateTime, setPickupDateTime] = useState("");
 
   const lineItems = useMemo(
     () =>
@@ -53,10 +54,10 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
   }, [pickupEmail, session?.user?.email]);
 
   useEffect(() => {
-    if (pickupTimeSlotId && !pickupSlots.some((slot) => slot.id === pickupTimeSlotId)) {
-      setPickupTimeSlotId("");
+    if (pickupDateTime && !pickupSlots.some((slot) => slot.value === pickupDateTime)) {
+      setPickupDateTime("");
     }
-  }, [pickupSlots, pickupTimeSlotId]);
+  }, [pickupSlots, pickupDateTime]);
 
   async function handleCheckout() {
     setPending(true);
@@ -71,7 +72,7 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
           paymentMethod,
           pickupPhone,
           pickupEmail,
-          pickupTimeSlotId,
+          pickupDateTime,
         }),
       });
 
@@ -113,6 +114,9 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
               <div>
                 <p className="font-medium text-slate-950">{product.name}</p>
                 <p className="text-sm text-slate-500">Qty {quantity}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  {product.availability === "COMING_SOON" ? "Coming soon" : `In stock ${product.stockQuantity}`}
+                </p>
                 {product.minimumOrderQuantity > 1 ? (
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                     Minimum order {product.minimumOrderQuantity}
@@ -168,17 +172,22 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
             />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
-            Choose pickup time
-            <select
-              value={pickupTimeSlotId}
-              onChange={(event) => setPickupTimeSlotId(event.target.value)}
+            Choose pickup date and time
+            <input
+              type="datetime-local"
+              list="available-pickup-times"
+              value={pickupDateTime}
+              onChange={(event) => setPickupDateTime(event.target.value)}
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
-            >
-              <option value="">Select an available pickup time</option>
+            />
+            <datalist id="available-pickup-times">
               {pickupSlots.map((slot) => (
-                <option key={slot.id} value={slot.id}>{slot.label}</option>
+                <option key={slot.id} value={slot.value} label={slot.label} />
               ))}
-            </select>
+            </datalist>
+            <p className="text-xs leading-5 text-slate-500">
+              Enter or choose one of the available pickup times exactly as listed above.
+            </p>
           </label>
         </div>
 
@@ -219,7 +228,7 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
         {error ? <p className="mt-4 text-sm font-medium text-rose-600">{error}</p> : null}
         <button
           type="button"
-          disabled={pending || !pickupSlots.length || !pickupTimeSlotId || !hasPickupContact}
+          disabled={pending || !pickupSlots.length || !pickupDateTime || !hasPickupContact}
           onClick={handleCheckout}
           className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >

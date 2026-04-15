@@ -4,7 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateUniqueOrderCode } from "@/lib/order-code";
-import { formatPickupSlotLabel } from "@/lib/order-display";
+import { formatPickupSlotInputValue, formatPickupSlotLabel } from "@/lib/order-display";
 
 const payloadSchema = z.object({
   items: z.array(
@@ -16,7 +16,7 @@ const payloadSchema = z.object({
   paymentMethod: z.enum(["E_TRANSFER", "CASH"]),
   pickupPhone: z.string().trim().optional(),
   pickupEmail: z.string().trim().optional(),
-  pickupTimeSlotId: z.string().trim().min(1, "Please choose one of the available pickup times."),
+  pickupDateTime: z.string().trim().min(1, "Please choose one of the available pickup times."),
 }).superRefine((value, ctx) => {
   if (!value.pickupPhone && !value.pickupEmail) {
     ctx.addIssue({
@@ -43,22 +43,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: payload.error.issues[0]?.message ?? "Your order payload is invalid." }, { status: 400 });
   }
 
-  const [products, pickupTimeSlot] = await Promise.all([
+  const [products, pickupSlots] = await Promise.all([
     db.product.findMany({
       where: {
         id: { in: payload.data.items.map((item) => item.productId) },
       },
     }),
-    db.pickupTimeSlot.findFirst({
-      where: {
-        id: payload.data.pickupTimeSlotId,
-        active: true,
-      },
+    db.pickupTimeSlot.findMany({
+      where: { active: true },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
     }),
   ]);
 
+  const pickupTimeSlot = pickupSlots.find(
+    (slot) => formatPickupSlotInputValue(slot) === payload.data.pickupDateTime,
+  );
+
   if (!pickupTimeSlot) {
-    return NextResponse.json({ error: "The selected pickup time is not in the available pickup schedule. Please choose one of the available times." }, { status: 400 });
+    return NextResponse.json({ error: "The selected date and time is not in the available pickup schedule. Please choose one of the available times." }, { status: 400 });
   }
 
   const lineItems = payload.data.items
@@ -68,30 +70,58 @@ export async function POST(request: Request) {
         return null;
       }
 
+      if (product.availability === "COMING_SOON") {
+        return {
+          product,
+          quantity: item.quantity,
+          invalid: "coming_soon" as const,
+        };
+      }
+
       if (item.quantity < product.minimumOrderQuantity) {
         return {
           product,
           quantity: item.quantity,
-          invalid: true as const,
+          invalid: "minimum" as const,
+        };
+      }
+
+      if (item.quantity > product.stockQuantity) {
+        return {
+          product,
+          quantity: item.quantity,
+          invalid: "stock" as const,
         };
       }
 
       return {
         product,
         quantity: item.quantity,
-        invalid: false as const,
+        invalid: null,
       };
     })
-    .filter(Boolean) as { product: (typeof products)[number]; quantity: number; invalid: boolean }[];
+    .filter(Boolean) as { product: (typeof products)[number]; quantity: number; invalid: "coming_soon" | "minimum" | "stock" | null }[];
 
   if (!lineItems.length) {
     return NextResponse.json({ error: "No valid products were found for checkout." }, { status: 400 });
   }
 
   const invalidMinimum = lineItems.find((item) => item.invalid);
-  if (invalidMinimum) {
+  if (invalidMinimum?.invalid === "coming_soon") {
+    return NextResponse.json({
+      error: `${invalidMinimum.product.name} is coming soon and cannot be ordered yet.`,
+    }, { status: 400 });
+  }
+
+  if (invalidMinimum?.invalid === "minimum") {
     return NextResponse.json({
       error: `${invalidMinimum.product.name} requires a minimum order of ${invalidMinimum.product.minimumOrderQuantity}.`,
+    }, { status: 400 });
+  }
+
+  if (invalidMinimum?.invalid === "stock") {
+    return NextResponse.json({
+      error: `${invalidMinimum.product.name} only has ${invalidMinimum.product.stockQuantity} in stock right now.`,
     }, { status: 400 });
   }
 
@@ -104,30 +134,58 @@ export async function POST(request: Request) {
     return Boolean(existing);
   });
 
-  const order = await db.order.create({
-    data: {
-      orderCode,
-      userId: session?.user?.id ?? null,
-      paymentMethod: payload.data.paymentMethod,
-      fulfillmentMethod: "PICKUP",
-      pickupPhone: payload.data.pickupPhone?.trim() || null,
-      pickupEmail: payload.data.pickupEmail?.trim() || null,
-      pickupTimeLabel: formatPickupSlotLabel(pickupTimeSlot),
-      pickupTimeSlotId: pickupTimeSlot.id,
-      total,
-      shippingStreet: null,
-      shippingCity: null,
-      shippingState: null,
-      shippingPostCode: null,
-      items: {
-        create: lineItems.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-          unitPrice: item.product.price,
-        })),
-      },
-    },
-  });
+  try {
+    const order = await db.$transaction(async (tx) => {
+      for (const item of lineItems) {
+        const updated = await tx.product.updateMany({
+          where: {
+            id: item.product.id,
+            availability: "ACTIVE",
+            stockQuantity: {
+              gte: item.quantity,
+            },
+          },
+          data: {
+            stockQuantity: {
+              decrement: item.quantity,
+            },
+          },
+        });
 
-  return NextResponse.json({ orderId: order.orderCode ?? order.id });
+        if (updated.count !== 1) {
+          throw new Error(`${item.product.name} is no longer available in the requested quantity.`);
+        }
+      }
+
+      return tx.order.create({
+        data: {
+          orderCode,
+          userId: session?.user?.id ?? null,
+          paymentMethod: payload.data.paymentMethod,
+          fulfillmentMethod: "PICKUP",
+          pickupPhone: payload.data.pickupPhone?.trim() || null,
+          pickupEmail: payload.data.pickupEmail?.trim() || null,
+          pickupTimeLabel: formatPickupSlotLabel(pickupTimeSlot),
+          pickupTimeSlotId: pickupTimeSlot.id,
+          total,
+          shippingStreet: null,
+          shippingCity: null,
+          shippingState: null,
+          shippingPostCode: null,
+          items: {
+            create: lineItems.map((item) => ({
+              productId: item.product.id,
+              quantity: item.quantity,
+              unitPrice: item.product.price,
+            })),
+          },
+        },
+      });
+    });
+
+    return NextResponse.json({ orderId: order.orderCode ?? order.id });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to place order.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 }
