@@ -40,8 +40,9 @@ export function ProductCard({ product }: { product: Product }) {
             minimumQuantity={product.minimumOrderQuantity}
             disabled={!canBuy}
             iconOnly
+            quickAdd
             ariaLabel={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `Add ${product.name} to cart`}
-            className={`h-9 w-9 border border-white/70 bg-white/95 text-slate-950 shadow-lg transition duration-300 hover:-translate-y-0.5 hover:scale-105 hover:bg-amber-300 focus-visible:scale-105 focus-visible:bg-amber-300 active:scale-95 sm:h-10 sm:w-10 ${
+            className={`group h-9 w-9 border border-white/70 bg-white/95 p-0 text-slate-950 shadow-lg shadow-slate-950/15 transition duration-300 hover:-translate-y-0.5 hover:scale-105 hover:bg-white focus-visible:scale-105 focus-visible:bg-white active:scale-95 sm:h-10 sm:w-10 ${
               canBuy ? "animate-in fade-in zoom-in-95" : ""
             }`}
           />

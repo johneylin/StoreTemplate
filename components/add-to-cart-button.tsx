@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, LoaderCircle, ShoppingBag } from "lucide-react";
+import { Check, LoaderCircle, Plus, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ export function AddToCartButton({
   className,
   iconOnly = false,
   ariaLabel,
+  quickAdd = false,
 }: {
   productId: string;
   minimumQuantity?: number;
@@ -22,6 +23,7 @@ export function AddToCartButton({
   className?: string;
   iconOnly?: boolean;
   ariaLabel?: string;
+  quickAdd?: boolean;
 }) {
   const { addItem } = useCart();
   const router = useRouter();
@@ -53,7 +55,27 @@ export function AddToCartButton({
         className,
       )}
     >
-      {pending ? (
+      {pending && quickAdd ? (
+        <span className="relative flex h-full w-full items-center justify-center overflow-hidden">
+          <LoaderCircle className="h-4 w-4 animate-spin" />
+        </span>
+      ) : added && quickAdd ? (
+        <span className="relative flex h-full w-full items-center justify-center overflow-hidden">
+          <span className="absolute inset-0 rounded-full border border-current/25 animate-in zoom-in-95" />
+          <span className="absolute inset-0 rounded-full border border-current/15 animate-ping" />
+          <Check className="relative z-10 h-4 w-4 animate-in zoom-in-95" />
+        </span>
+      ) : iconOnly && quickAdd ? (
+        <span className="relative flex h-full w-full items-center justify-center overflow-hidden">
+          <span className="absolute inset-0 rounded-full bg-white/90 transition duration-300 group-hover:bg-amber-200 group-focus-visible:bg-amber-200" />
+          <span className="relative z-10 flex items-center justify-center text-slate-950 transition duration-300 group-hover:scale-105 group-focus-visible:scale-105">
+            <span className="relative inline-flex">
+              <ShoppingBag className="h-4 w-4" />
+              <Plus className="absolute -right-1.5 -top-1.5 h-2.5 w-2.5 rounded-full bg-white text-slate-950 shadow-sm ring-1 ring-slate-200 transition duration-300 group-hover:bg-amber-300 group-focus-visible:bg-amber-300" />
+            </span>
+          </span>
+        </span>
+      ) : pending ? (
         <LoaderCircle className="h-4 w-4 animate-spin" />
       ) : added ? (
         <Check className="h-4 w-4 animate-in zoom-in-95" />
