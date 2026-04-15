@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { GUEST_DEVICE_COOKIE } from "@/lib/guest-device";
 import {
   formatOrderAddress,
   formatOrderDate,
@@ -17,9 +19,22 @@ import { formatCurrency } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
-  const session = await requireUser();
-  const orders = await db.order.findMany({
-    where: { userId: session.user.id },
+  const session = await getSession();
+  const cookieStore = await cookies();
+  const guestDeviceId = cookieStore.get(GUEST_DEVICE_COOKIE)?.value ?? null;
+  const orderWhere = session?.user?.id
+    ? {
+        OR: [
+          { userId: session.user.id },
+          ...(guestDeviceId ? [{ guestDeviceId, userId: null }] : []),
+        ],
+      }
+    : guestDeviceId
+      ? { guestDeviceId, userId: null }
+      : null;
+
+  const orders = orderWhere ? await db.order.findMany({
+    where: orderWhere,
     include: {
       user: {
         select: {
@@ -34,7 +49,7 @@ export default async function OrdersPage() {
       },
     },
     orderBy: { createdAt: "desc" },
-  });
+  }) : [];
   const pickupAddress = formatAddress(getPickupAddress());
 
   return (
@@ -42,6 +57,13 @@ export default async function OrdersPage() {
       <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Order history</p>
         <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight text-slate-950">Review every pickup order, payment choice, contact detail, and item subtotal in one place.</h1>
+        <p className="mt-4 text-base leading-7 text-slate-600">
+          {session?.user?.id
+            ? "Signed-in orders and any guest orders saved on this device are shown here."
+            : guestDeviceId
+              ? "These are the guest orders saved on this device."
+              : "No guest order history is linked to this device yet."}
+        </p>
       </div>
 
       <div className="mt-10 space-y-6">
@@ -113,7 +135,7 @@ export default async function OrdersPage() {
           ))
         ) : (
           <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-slate-600">
-            You have not placed an order yet. <Link href="/products" className="font-semibold text-slate-950">Browse products</Link>.
+            You have not placed an order yet on this account or device. <Link href="/products" className="font-semibold text-slate-950">Browse products</Link>.
           </div>
         )}
       </div>

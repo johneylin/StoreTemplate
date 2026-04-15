@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { createGuestDeviceId, getGuestDeviceCookieOptions, GUEST_DEVICE_COOKIE } from "@/lib/guest-device";
 import { generateUniqueOrderCode } from "@/lib/order-code";
+import { sendOrderNotifications } from "@/lib/order-notifications";
 import { formatPickupSlotInputValue, formatPickupSlotLabel } from "@/lib/order-display";
+import { formatAddress, getETransferEmail, getPickupAddress } from "@/lib/store-config";
 
 const payloadSchema = z.object({
   items: z.array(
@@ -37,6 +41,9 @@ const payloadSchema = z.object({
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
+  const cookieStore = await cookies();
+  const existingGuestDeviceId = cookieStore.get(GUEST_DEVICE_COOKIE)?.value ?? null;
+  const guestDeviceId = session?.user?.id ? null : (existingGuestDeviceId ?? createGuestDeviceId());
 
   const payload = payloadSchema.safeParse(await request.json());
   if (!payload.success) {
@@ -126,6 +133,8 @@ export async function POST(request: Request) {
   }
 
   const total = lineItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const pickupAddress = formatAddress(getPickupAddress());
+  const eTransferEmail = getETransferEmail();
   const orderCode = await generateUniqueOrderCode(async (code) => {
     const existing = await db.order.findUnique({
       where: { orderCode: code },
@@ -161,6 +170,7 @@ export async function POST(request: Request) {
         data: {
           orderCode,
           userId: session?.user?.id ?? null,
+          guestDeviceId,
           paymentMethod: payload.data.paymentMethod,
           fulfillmentMethod: "PICKUP",
           pickupPhone: payload.data.pickupPhone?.trim() || null,
@@ -183,7 +193,24 @@ export async function POST(request: Request) {
       });
     });
 
-    return NextResponse.json({ orderId: order.orderCode ?? order.id });
+    const resolvedOrderId = order.orderCode ?? order.id;
+    await sendOrderNotifications({
+      orderId: resolvedOrderId,
+      paymentMethod: order.paymentMethod,
+      pickupPhone: order.pickupPhone,
+      pickupEmail: order.pickupEmail,
+      pickupTime: order.pickupTimeLabel ?? formatPickupSlotLabel(pickupTimeSlot),
+      pickupAddress,
+      eTransferEmail,
+    });
+
+    const response = NextResponse.json({ orderId: resolvedOrderId });
+
+    if (guestDeviceId) {
+      response.cookies.set(GUEST_DEVICE_COOKIE, guestDeviceId, getGuestDeviceCookieOptions());
+    }
+
+    return response;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to place order.";
     return NextResponse.json({ error: message }, { status: 400 });

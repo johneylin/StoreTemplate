@@ -82,6 +82,7 @@ model Order {
   id                String            @id @default(cuid())
   orderCode         String?           @unique
   userId            String?
+  guestDeviceId     String?
   status            OrderStatus       @default(PENDING)
   paymentMethod     PaymentMethod     @default(E_TRANSFER)
   fulfillmentMethod FulfillmentMethod @default(PICKUP)
@@ -99,6 +100,8 @@ model Order {
   items             OrderItem[]
   user              User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
   pickupTimeSlot    PickupTimeSlot?   @relation(fields: [pickupTimeSlotId], references: [id], onDelete: SetNull)
+
+  @@index([guestDeviceId, createdAt])
 }
 
 model OrderItem {

@@ -32,6 +32,11 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
   const [pickupPhone, setPickupPhone] = useState("");
   const [pickupEmail, setPickupEmail] = useState("");
   const [pickupDateTime, setPickupDateTime] = useState("");
+  const hasMatchingPickupTime = pickupSlots.some((slot) => slot.value === pickupDateTime);
+  const pickupTimeIssue =
+    pickupDateTime && !hasMatchingPickupTime
+      ? "The pickup time you entered is not in the available schedule. Enter one of the available times shown above."
+      : null;
 
   const lineItems = useMemo(
     () =>
@@ -68,12 +73,6 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
       setPickupEmail(session.user.email);
     }
   }, [pickupEmail, session?.user?.email]);
-
-  useEffect(() => {
-    if (pickupDateTime && !pickupSlots.some((slot) => slot.value === pickupDateTime)) {
-      setPickupDateTime("");
-    }
-  }, [pickupSlots, pickupDateTime]);
 
   async function handleCheckout() {
     setPending(true);
@@ -195,22 +194,17 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
             />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
-            Choose pickup date and time
+            Enter pickup date and time
             <input
               type="datetime-local"
-              list="available-pickup-times"
               value={pickupDateTime}
               onChange={(event) => setPickupDateTime(event.target.value)}
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
             />
-            <datalist id="available-pickup-times">
-              {pickupSlots.map((slot) => (
-                <option key={slot.id} value={slot.value} label={slot.label} />
-              ))}
-            </datalist>
             <p className="text-xs leading-5 text-slate-500">
-              Enter or choose one of the available pickup times exactly as listed above.
+              Enter one of the available pickup times exactly as listed above.
             </p>
+            {pickupTimeIssue ? <p className="text-sm font-medium text-rose-600">{pickupTimeIssue}</p> : null}
           </label>
         </div>
 
@@ -251,7 +245,7 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
         {error ? <p className="mt-4 text-sm font-medium text-rose-600">{error}</p> : null}
         <button
           type="button"
-          disabled={pending || !pickupSlots.length || !pickupDateTime || !hasPickupContact || hasStockIssues}
+          disabled={pending || !pickupSlots.length || !pickupDateTime || !hasMatchingPickupTime || !hasPickupContact || hasStockIssues}
           onClick={handleCheckout}
           className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >

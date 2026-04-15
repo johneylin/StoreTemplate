@@ -87,6 +87,11 @@ A starter ecommerce website built with the following stack:
    - `BLOB_STORE_ACCESS`
    - `BLOB_READ_WRITE_TOKEN`
    - `ETRANSFER_EMAIL`
+   - `RESEND_API_KEY`
+   - `RESEND_FROM_EMAIL`
+   - `TWILIO_ACCOUNT_SID`
+   - `TWILIO_AUTH_TOKEN`
+   - `TWILIO_FROM_PHONE`
    - `PICKUP_STREET`
    - `PICKUP_CITY`
    - `PICKUP_STATE`
@@ -144,6 +149,11 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `BLOB_STORE_ACCESS`: `public` or `private` to match your Vercel Blob store
 - `BLOB_READ_WRITE_TOKEN`: Vercel Blob read-write token used for admin uploads
 - `ETRANSFER_EMAIL`: Destination email shown for e-transfer payments
+- `RESEND_API_KEY`: Resend API key for order confirmation emails
+- `RESEND_FROM_EMAIL`: Verified sender email address used for order confirmation emails
+- `TWILIO_ACCOUNT_SID`: Twilio account SID for SMS notifications
+- `TWILIO_AUTH_TOKEN`: Twilio auth token for SMS notifications
+- `TWILIO_FROM_PHONE`: Twilio phone number used to send order SMS messages
 - `PICKUP_STREET`: Pickup street address
 - `PICKUP_CITY`: Pickup city
 - `PICKUP_STATE`: Pickup state or province
@@ -159,11 +169,14 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 
 - Checkout is pickup only.
 - Customers can place guest orders, but they must choose a pickup time and provide either a phone number or an email address.
+- Guest orders are linked to a device cookie so the same guest can reopen `/orders` later and still see their past orders on that device.
 - Admins manage available pickup date and time windows from the admin order workspace.
 - Admins can set a minimum order quantity for each product.
 - Admins can track stock quantity and mark products as coming soon.
 - The order confirmation page shows the payment method, pickup address, pickup time, contact detail, and a short `YYMMxxxxx` order code.
 - Admin product management now supports direct Vercel Blob uploads for images and videos.
+- If `RESEND_API_KEY` / `RESEND_FROM_EMAIL` are configured, checkout sends an order confirmation email to the pickup email address.
+- If `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM_PHONE` are configured, checkout sends an order confirmation SMS to the pickup phone number.
 
 ## Verification run completed here
 

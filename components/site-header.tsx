@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { ShoppingBag, UserRound } from "lucide-react";
+import { Menu, ShoppingBag, UserRound, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { useCart } from "@/components/cart-provider";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { count } = useCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/90 backdrop-blur">
@@ -47,6 +49,16 @@ export function SiteHeader() {
         </div>
 
         <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-white transition hover:bg-white/10 md:hidden"
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
           <Link
             href="/cart"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/10 sm:px-4"
@@ -78,13 +90,19 @@ export function SiteHeader() {
           )}
         </div>
 
-        <nav className="-mx-1 flex w-full gap-2 overflow-x-auto px-1 pb-1 md:hidden">
+        <nav
+          className={cn(
+            "w-full flex-col gap-2 rounded-[1.5rem] border border-white/10 bg-white/5 p-3 md:hidden",
+            mobileMenuOpen ? "flex" : "hidden",
+          )}
+        >
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
               className={cn(
-                "inline-flex shrink-0 items-center rounded-full border px-4 py-2 text-sm font-medium transition",
+                "inline-flex items-center rounded-2xl border px-4 py-3 text-sm font-medium transition",
                 pathname === link.href
                   ? "border-amber-300 bg-amber-400 text-slate-950"
                   : "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10",
