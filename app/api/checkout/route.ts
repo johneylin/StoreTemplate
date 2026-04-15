@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { createGuestDeviceId, getGuestDeviceCookieOptions, GUEST_DEVICE_COOKIE } from "@/lib/guest-device";
 import { generateUniqueOrderCode } from "@/lib/order-code";
 import { sendOrderNotifications } from "@/lib/order-notifications";
-import { formatPickupSlotInputValue, formatPickupSlotLabel } from "@/lib/order-display";
+import { formatPickupSlotLabel, formatSelectedPickupDateTime, isPickupDateTimeWithinSlot } from "@/lib/order-display";
 import { formatAddress, getETransferEmail, getPickupAddress } from "@/lib/store-config";
 
 const payloadSchema = z.object({
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
   ]);
 
   const pickupTimeSlot = pickupSlots.find(
-    (slot) => formatPickupSlotInputValue(slot) === payload.data.pickupDateTime,
+    (slot) => isPickupDateTimeWithinSlot(payload.data.pickupDateTime, slot),
   );
 
   if (!pickupTimeSlot) {
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
           fulfillmentMethod: "PICKUP",
           pickupPhone: payload.data.pickupPhone?.trim() || null,
           pickupEmail: payload.data.pickupEmail?.trim() || null,
-          pickupTimeLabel: formatPickupSlotLabel(pickupTimeSlot),
+          pickupTimeLabel: `${formatSelectedPickupDateTime(payload.data.pickupDateTime)} within ${formatPickupSlotLabel(pickupTimeSlot)}`,
           pickupTimeSlotId: pickupTimeSlot.id,
           total,
           shippingStreet: null,
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
       paymentMethod: order.paymentMethod,
       pickupPhone: order.pickupPhone,
       pickupEmail: order.pickupEmail,
-      pickupTime: order.pickupTimeLabel ?? formatPickupSlotLabel(pickupTimeSlot),
+      pickupTime: order.pickupTimeLabel ?? `${formatSelectedPickupDateTime(payload.data.pickupDateTime)} within ${formatPickupSlotLabel(pickupTimeSlot)}`,
       pickupAddress,
       eTransferEmail,
     });

@@ -30,6 +30,7 @@ export default async function CheckoutPage() {
           id: slot.id,
           label: formatPickupSlotLabel(slot),
           value: formatPickupSlotInputValue(slot),
+          endValue: `${slot.endTime.getUTCFullYear()}-${String(slot.endTime.getUTCMonth() + 1).padStart(2, "0")}-${String(slot.endTime.getUTCDate()).padStart(2, "0")}T${String(slot.endTime.getUTCHours()).padStart(2, "0")}:${String(slot.endTime.getUTCMinutes()).padStart(2, "0")}`,
         }))}
       />
     </div>

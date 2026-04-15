@@ -23,6 +23,15 @@ export function createPickupDateTime(date: string, time: string) {
   return new Date(Date.UTC(year, month - 1, day, hours, minutes));
 }
 
+export function createPickupDateTimeFromInput(value: string) {
+  const [date, time] = value.split("T");
+  if (!date || !time) {
+    return null;
+  }
+
+  return createPickupDateTime(date, time);
+}
+
 export function formatPickupDateInputValue(date: Date) {
   return `${date.getUTCFullYear()}-${padPickupPart(date.getUTCMonth() + 1)}-${padPickupPart(date.getUTCDate())}`;
 }
@@ -106,6 +115,19 @@ export function formatPickupSlotInputValue(slot: {
   return `${formatPickupDateInputValue(slot.startTime)}T${formatPickupTimeInputValue(slot.startTime)}`;
 }
 
+export function isPickupDateTimeWithinSlot(value: string, slot: {
+  startTime: Date;
+  endTime: Date;
+}) {
+  const selectedTime = createPickupDateTimeFromInput(value);
+
+  if (!selectedTime) {
+    return false;
+  }
+
+  return selectedTime >= slot.startTime && selectedTime <= slot.endTime;
+}
+
 export function formatPickupSlotLabel(slot: {
   date: Date;
   startTime: Date;
@@ -120,6 +142,23 @@ export function formatPickupSlotLabel(slot: {
   }).format(slot.date);
 
   return `${dateLabel} ${formatPickupSlotRange(slot.startTime, slot.endTime)}`;
+}
+
+export function formatSelectedPickupDateTime(value: string) {
+  const selectedTime = createPickupDateTimeFromInput(value);
+  if (!selectedTime) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-CA", {
+    weekday: "short",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(selectedTime);
 }
 
 export function formatPickupTime(order: {

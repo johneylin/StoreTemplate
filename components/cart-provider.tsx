@@ -44,7 +44,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => ({
     items,
-    count: items.reduce((sum, item) => sum + item.quantity, 0),
+    count: items.length,
     addItem(productId, minimumQuantity = 1) {
       setItems((current) => {
         const match = current.find((item) => item.productId === productId);

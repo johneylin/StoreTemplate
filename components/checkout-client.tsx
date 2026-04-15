@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { PaymentMethod, Product } from "@/generated/prisma/client";
 import { useCart } from "@/components/cart-provider";
+import { isPickupDateTimeWithinSlot } from "@/lib/order-display";
 import { formatCurrency } from "@/lib/utils";
 
 type PickupSlot = {
   id: string;
   label: string;
   value: string;
+  endValue: string;
 };
 
 type CheckoutClientProps = {
@@ -32,7 +34,12 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
   const [pickupPhone, setPickupPhone] = useState("");
   const [pickupEmail, setPickupEmail] = useState("");
   const [pickupDateTime, setPickupDateTime] = useState("");
-  const hasMatchingPickupTime = pickupSlots.some((slot) => slot.value === pickupDateTime);
+  const hasMatchingPickupTime = pickupSlots.some((slot) =>
+    isPickupDateTimeWithinSlot(pickupDateTime, {
+      startTime: new Date(`${slot.value}:00.000Z`),
+      endTime: new Date(`${slot.endValue}:00.000Z`),
+    }),
+  );
   const pickupTimeIssue =
     pickupDateTime && !hasMatchingPickupTime
       ? "The pickup time you entered is not in the available schedule. Enter one of the available times shown above."
