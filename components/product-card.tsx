@@ -28,24 +28,24 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
       </div>
-      <div className="space-y-4 p-5">
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-lg font-semibold text-slate-900">{formatCurrency(product.price)}</span>
-        </div>
-        <div className="space-y-2">
-          <Link href={`/products/${product.slug}`} className="font-display text-xl font-semibold text-slate-950">
+      <div className="space-y-3 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <Link href={`/products/${product.slug}`} className="line-clamp-2 font-display text-lg font-semibold leading-6 text-slate-950 sm:text-xl">
             {product.name}
           </Link>
+          <span className="shrink-0 text-base font-semibold text-slate-900 sm:text-lg">{formatCurrency(product.price)}</span>
+        </div>
+        <div className="space-y-1.5">
           {product.minimumOrderQuantity > 1 ? (
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Minimum order {product.minimumOrderQuantity}
             </p>
           ) : null}
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <Link
             href={`/products/${product.slug}`}
-            className="flex-1 rounded-full border border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
+            className="flex-1 rounded-full border border-slate-200 px-3 py-2.5 text-center text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
           >
             View details
           </Link>
@@ -54,6 +54,7 @@ export function ProductCard({ product }: { product: Product }) {
             minimumQuantity={product.minimumOrderQuantity}
             disabled={!canBuy}
             label={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : undefined}
+            className="min-w-0 px-3 py-2.5 text-sm"
           />
         </div>
       </div>
