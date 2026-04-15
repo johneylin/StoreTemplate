@@ -12,6 +12,7 @@ type CartPageClientProps = {
 
 export function CartPageClient({ products }: CartPageClientProps) {
   const { items, removeItem, updateQuantity } = useCart();
+  const blockedNumberKeys = ["e", "E", "+", "-", "."];
 
   const lineItems = items
     .map((item) => {
@@ -110,7 +111,29 @@ export function CartPageClient({ products }: CartPageClientProps) {
                 >
                   -
                 </button>
-                <span className="w-10 text-center text-sm font-semibold text-slate-950">{quantity}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={product.minimumOrderQuantity}
+                  max={product.stockQuantity}
+                  step={1}
+                  value={quantity}
+                  onChange={(event) => {
+                    const nextValue = Number.parseInt(event.target.value, 10);
+                    if (Number.isNaN(nextValue)) {
+                      return;
+                    }
+
+                    updateQuantity(product.id, nextValue, product.minimumOrderQuantity);
+                  }}
+                  onKeyDown={(event) => {
+                    if (blockedNumberKeys.includes(event.key)) {
+                      event.preventDefault();
+                    }
+                  }}
+                  className="w-12 bg-transparent text-center text-sm font-semibold text-slate-950 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  aria-label={`Quantity for ${product.name}`}
+                />
                 <button
                   type="button"
                   onClick={() => updateQuantity(product.id, quantity + 1, product.minimumOrderQuantity)}

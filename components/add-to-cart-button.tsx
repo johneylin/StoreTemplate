@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoaderCircle, ShoppingBag } from "lucide-react";
+import { Check, LoaderCircle, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/cart-provider";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,7 @@ export function AddToCartButton({
   const { addItem } = useCart();
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [added, setAdded] = useState(false);
 
   return (
     <button
@@ -35,9 +36,14 @@ export function AddToCartButton({
           return;
         }
         setPending(true);
+        setAdded(false);
         addItem(productId, minimumQuantity);
         router.refresh();
-        setTimeout(() => setPending(false), 250);
+        setTimeout(() => {
+          setPending(false);
+          setAdded(true);
+          setTimeout(() => setAdded(false), 900);
+        }, 250);
       }}
       disabled={disabled}
       aria-label={ariaLabel ?? label ?? (minimumQuantity > 1 ? `Add ${minimumQuantity}+ to cart` : "Add to cart")}
@@ -49,13 +55,10 @@ export function AddToCartButton({
     >
       {pending ? (
         <LoaderCircle className="h-4 w-4 animate-spin" />
+      ) : added ? (
+        <Check className="h-4 w-4 animate-in zoom-in-95" />
       ) : iconOnly ? (
-        <>
-          <ShoppingBag className="h-4 w-4 shrink-0" />
-          <span className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-semibold uppercase tracking-[0.18em] opacity-0 transition-all duration-300 group-hover:max-w-24 group-hover:opacity-100 group-focus-visible:max-w-24 group-focus-visible:opacity-100">
-            Add
-          </span>
-        </>
+        <ShoppingBag className="h-4 w-4 shrink-0" />
       ) : null}
       {!iconOnly ? (label ?? (minimumQuantity > 1 ? `Add ${minimumQuantity}+ to cart` : "Add to cart")) : null}
     </button>
