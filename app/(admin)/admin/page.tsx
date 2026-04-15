@@ -49,24 +49,25 @@ async function upsertProduct(formData: FormData) {
     redirect(`/admin${edit}`);
   }
 
-  const slug = slugify(parsed.name);
+  const values = parsed.data;
+  const slug = slugify(values.name);
 
   const data = {
-    name: parsed.name,
-    category: parsed.category,
-    description: parsed.description,
-    price: parsed.price,
-    minimumOrderQuantity: parsed.minimumOrderQuantity,
-    imageUrl: parsed.imageUrl,
-    videoUrl: parsed.videoUrl || null,
-    featured: parsed.featured === "on",
+    name: values.name,
+    category: values.category,
+    description: values.description,
+    price: values.price,
+    minimumOrderQuantity: values.minimumOrderQuantity,
+    imageUrl: values.imageUrl,
+    videoUrl: values.videoUrl || null,
+    featured: values.featured === "on",
     slug,
   };
 
   try {
-    if (parsed.id) {
+    if (values.id) {
       await db.product.update({
-        where: { id: parsed.id },
+        where: { id: values.id },
         data,
       });
     } else {
@@ -79,7 +80,7 @@ async function upsertProduct(formData: FormData) {
       message = "A product with this name already exists. Please use a different product name.";
     }
 
-    const edit = parsed.id ? `?edit=${parsed.id}&error=${encodeURIComponent(message)}` : `?error=${encodeURIComponent(message)}`;
+    const edit = values.id ? `?edit=${values.id}&error=${encodeURIComponent(message)}` : `?error=${encodeURIComponent(message)}`;
     redirect(`/admin${edit}`);
   }
 
