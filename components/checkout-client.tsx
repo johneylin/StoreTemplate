@@ -30,7 +30,7 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("E_TRANSFER");
   const [pickupPhone, setPickupPhone] = useState("");
   const [pickupEmail, setPickupEmail] = useState("");
-  const [pickupTimeSlotId, setPickupTimeSlotId] = useState(pickupSlots[0]?.id ?? "");
+  const [pickupTimeSlotId, setPickupTimeSlotId] = useState("");
 
   const lineItems = useMemo(
     () =>
@@ -53,8 +53,8 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
   }, [pickupEmail, session?.user?.email]);
 
   useEffect(() => {
-    if (!pickupSlots.some((slot) => slot.id === pickupTimeSlotId)) {
-      setPickupTimeSlotId(pickupSlots[0]?.id ?? "");
+    if (pickupTimeSlotId && !pickupSlots.some((slot) => slot.id === pickupTimeSlotId)) {
+      setPickupTimeSlotId("");
     }
   }, [pickupSlots, pickupTimeSlotId]);
 
@@ -133,6 +133,18 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
         <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
           Pickup address: <span className="font-semibold text-slate-950">{pickupAddress}</span>
         </div>
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-slate-700">
+          Available pickup times:
+          <div className="mt-2 space-y-1">
+            {pickupSlots.length ? (
+              pickupSlots.map((slot) => (
+                <p key={slot.id} className="font-medium text-slate-950">{slot.label}</p>
+              ))
+            ) : (
+              <p className="font-medium text-rose-700">No pickup times are available right now.</p>
+            )}
+          </div>
+        </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <label className="block space-y-2 text-sm font-medium text-slate-700">
@@ -156,12 +168,13 @@ export function CheckoutClient({ products, pickupAddress, pickupSlots }: Checkou
             />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
-            Pick up time
+            Choose pickup time
             <select
               value={pickupTimeSlotId}
               onChange={(event) => setPickupTimeSlotId(event.target.value)}
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
             >
+              <option value="">Select an available pickup time</option>
               {pickupSlots.map((slot) => (
                 <option key={slot.id} value={slot.id}>{slot.label}</option>
               ))}

@@ -81,13 +81,12 @@ export function formatPickupSlotLabel(slot: {
   endTime: Date;
 }) {
   const dateLabel = new Intl.DateTimeFormat("en-CA", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
     year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   }).format(slot.date);
 
-  return `${dateLabel}, ${formatPickupSlotRange(slot.startTime, slot.endTime)}`;
+  return `${dateLabel} ${formatPickupSlotRange(slot.startTime, slot.endTime)}`;
 }
 
 export function formatPickupTime(order: {

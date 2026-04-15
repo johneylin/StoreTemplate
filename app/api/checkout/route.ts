@@ -16,7 +16,7 @@ const payloadSchema = z.object({
   paymentMethod: z.enum(["E_TRANSFER", "CASH"]),
   pickupPhone: z.string().trim().optional(),
   pickupEmail: z.string().trim().optional(),
-  pickupTimeSlotId: z.string().trim().min(1),
+  pickupTimeSlotId: z.string().trim().min(1, "Please choose one of the available pickup times."),
 }).superRefine((value, ctx) => {
   if (!value.pickupPhone && !value.pickupEmail) {
     ctx.addIssue({
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   ]);
 
   if (!pickupTimeSlot) {
-    return NextResponse.json({ error: "The selected pickup time is no longer available." }, { status: 400 });
+    return NextResponse.json({ error: "The selected pickup time is not in the available pickup schedule. Please choose one of the available times." }, { status: 400 });
   }
 
   const lineItems = payload.data.items

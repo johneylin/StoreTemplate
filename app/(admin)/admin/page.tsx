@@ -29,7 +29,7 @@ const productSchema = z.object({
   name: z.string().min(2),
   category: z.string().min(2),
   description: z.string().min(10),
-  price: z.coerce.number().int().positive(),
+  price: z.coerce.number().positive(),
   minimumOrderQuantity: z.coerce.number().int().positive(),
   imageUrl: mediaUrlSchema,
   videoUrl: z.union([mediaUrlSchema, z.literal("")]).optional(),
@@ -56,7 +56,7 @@ async function upsertProduct(formData: FormData) {
     name: values.name,
     category: values.category,
     description: values.description,
-    price: values.price,
+    price: Math.round(values.price * 100),
     minimumOrderQuantity: values.minimumOrderQuantity,
     imageUrl: values.imageUrl,
     videoUrl: values.videoUrl || null,
@@ -154,8 +154,16 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <input name="category" defaultValue={editableProduct?.category} required className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700">
-            Price (cents)
-            <input name="price" type="number" min="100" step="100" defaultValue={editableProduct?.price ?? 1000} required className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950" />
+            Price (dollars)
+            <input
+              name="price"
+              type="number"
+              min="0.01"
+              step="0.01"
+              defaultValue={editableProduct ? (editableProduct.price / 100).toFixed(2) : "10.00"}
+              required
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            />
           </label>
           <label className="block space-y-2 text-sm font-medium text-slate-700">
             Minimum order quantity
