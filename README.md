@@ -72,6 +72,7 @@ A starter ecommerce website built with the following stack:
 
 - The admin product form can now upload product images and videos directly to Vercel Blob.
 - Uploads require `BLOB_READ_WRITE_TOKEN`.
+- Set `BLOB_STORE_ACCESS=public` for direct media URLs or `private` if your store is private.
 - You can still paste a hosted media URL manually if you prefer.
 
 ## Vercel deployment
@@ -82,6 +83,7 @@ A starter ecommerce website built with the following stack:
    - `DATABASE_URL`
    - `NEXTAUTH_URL`
    - `NEXTAUTH_SECRET`
+   - `BLOB_STORE_ACCESS`
    - `BLOB_READ_WRITE_TOKEN`
    - `ETRANSFER_EMAIL`
    - `PICKUP_STREET`
@@ -138,6 +140,7 @@ On Windows PowerShell, replace `${PWD}` with the full repository path if needed.
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_URL`: Base URL for NextAuth callbacks
 - `NEXTAUTH_SECRET`: Secret used by NextAuth
+- `BLOB_STORE_ACCESS`: `public` or `private` to match your Vercel Blob store
 - `BLOB_READ_WRITE_TOKEN`: Vercel Blob read-write token used for admin uploads
 - `ETRANSFER_EMAIL`: Destination email shown for e-transfer payments
 - `PICKUP_STREET`: Pickup street address

@@ -1,5 +1,6 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { getBlobStoreAccess, getPrivateBlobProxyUrl } from "@/lib/blob-storage";
 import { getSession } from "@/lib/auth";
 
 const maxSizes = {
@@ -19,6 +20,7 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const session = await getSession();
+  const access = getBlobStoreAccess();
 
   if (session?.user?.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -56,13 +58,15 @@ export async function POST(request: Request) {
     const pathname = `products/${kind}/${Date.now()}-${filename}`;
 
     const blob = await put(pathname, uploadFile, {
-      access: "public",
+      access,
       token: process.env.BLOB_READ_WRITE_TOKEN,
       addRandomSuffix: true,
       contentType: uploadFile.type,
     });
 
-    return NextResponse.json({ url: blob.url });
+    return NextResponse.json({
+      url: access === "private" ? getPrivateBlobProxyUrl(blob.pathname) : blob.url,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Upload failed.";
     return NextResponse.json({ error: message }, { status: 500 });
