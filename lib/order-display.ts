@@ -1,5 +1,8 @@
 import { formatAddress } from "@/lib/store-config";
 
+const ORDER_TIME_ZONE = "America/Toronto";
+const PICKUP_DISPLAY_TIME_ZONE = "UTC";
+
 function padPickupPart(value: number) {
   return value.toString().padStart(2, "0");
 }
@@ -8,7 +11,7 @@ function formatPickupTimeValue(date: Date) {
   return new Intl.DateTimeFormat("en-CA", {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: PICKUP_DISPLAY_TIME_ZONE,
   }).format(date);
 }
 
@@ -138,7 +141,7 @@ export function formatPickupSlotLabel(slot: {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    timeZone: "UTC",
+    timeZone: PICKUP_DISPLAY_TIME_ZONE,
   }).format(slot.date);
 
   return `${dateLabel} ${formatPickupSlotRange(slot.startTime, slot.endTime)}`;
@@ -157,7 +160,7 @@ export function formatSelectedPickupDateTime(value: string) {
     day: "2-digit",
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: PICKUP_DISPLAY_TIME_ZONE,
   }).format(selectedTime);
 }
 
@@ -171,6 +174,7 @@ export function formatOrderDate(value: Date) {
   return new Intl.DateTimeFormat("en-CA", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: ORDER_TIME_ZONE,
   }).format(value);
 }
 
