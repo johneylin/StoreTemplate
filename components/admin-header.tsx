@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { Package, ReceiptText } from "lucide-react";
+import { CalendarClock, Package, ReceiptText } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ReceiptText },
+  { href: "/admin/pickup", label: "Pickup windows", icon: CalendarClock },
 ];
 
 export function AdminHeader() {
@@ -23,7 +24,7 @@ export function AdminHeader() {
           <BrandLogo className="items-center" />
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Admin workspace</p>
-            <p className="mt-1 text-sm text-slate-300">Products, pickup windows, and order status in one place.</p>
+            <p className="mt-1 text-sm text-slate-300">Manage products, pickup availability, and customer orders.</p>
           </div>
         </div>
 

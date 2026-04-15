@@ -1,17 +1,9 @@
-import { revalidatePath } from "next/cache";
-import Link from "next/link";
-import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
-  createPickupDate,
-  createPickupDateTime,
-  formatPickupDateInputValue,
   formatOrderAddress,
   formatOrderDate,
   formatPickupContact,
-  formatPickupSlotLabel,
-  formatPickupTimeInputValue,
   formatPickupTime,
   fulfillmentMethodLabels,
   getStatusBadgeClass,
@@ -21,249 +13,110 @@ import {
 } from "@/lib/order-display";
 import { formatAddress, getPickupAddress } from "@/lib/store-config";
 import { formatCurrency } from "@/lib/utils";
-
-const statusSchema = z.object({
-  orderId: z.string().min(1),
-  status: z.enum(orderStatusOptions),
-});
-
-const pickupSlotSchema = z.object({
-  slotId: z.string().optional(),
-  date: z.string().min(1),
-  startTime: z.string().min(1),
-  endTime: z.string().min(1),
-}).superRefine((value, ctx) => {
-  const start = createPickupDateTime(value.date, value.startTime);
-  const end = createPickupDateTime(value.date, value.endTime);
-
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["date"],
-      message: "Enter a valid pickup date and time range.",
-    });
-    return;
-  }
-
-  if (end <= start) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["endTime"],
-      message: "Pickup end time must be after the start time.",
-    });
-  }
-});
-
-const pickupSlotCopySchema = z.object({
-  slotId: z.string().min(1),
-});
-
-async function updateOrderStatus(formData: FormData) {
-  "use server";
-
-  await requireAdmin();
-  const parsed = statusSchema.parse(Object.fromEntries(formData));
-
-  await db.order.update({
-    where: { id: parsed.orderId },
-    data: { status: parsed.status },
-  });
-
-  revalidatePath("/admin/orders");
-  revalidatePath("/orders");
-  revalidatePath("/checkout/success");
-}
-
-async function createPickupSlot(formData: FormData) {
-  "use server";
-
-  await requireAdmin();
-  const parsed = pickupSlotSchema.parse(Object.fromEntries(formData));
-  const start = createPickupDateTime(parsed.date, parsed.startTime);
-  const end = createPickupDateTime(parsed.date, parsed.endTime);
-  const date = createPickupDate(parsed.date);
-
-  if (parsed.slotId) {
-    await db.pickupTimeSlot.update({
-      where: { id: parsed.slotId },
-      data: {
-        date,
-        startTime: start,
-        endTime: end,
-      },
-    });
-  } else {
-    await db.pickupTimeSlot.create({
-      data: {
-        date,
-        startTime: start,
-        endTime: end,
-        active: true,
-      },
-    });
-  }
-
-  revalidatePath("/admin/orders");
-  revalidatePath("/checkout");
-}
-
-async function copyPickupSlotToNextWeek(formData: FormData) {
-  "use server";
-
-  await requireAdmin();
-  const parsed = pickupSlotCopySchema.parse(Object.fromEntries(formData));
-  const slot = await db.pickupTimeSlot.findUnique({
-    where: { id: parsed.slotId },
-  });
-
-  if (!slot) {
-    return;
-  }
-
-  const nextDate = new Date(slot.date);
-  nextDate.setUTCDate(nextDate.getUTCDate() + 7);
-
-  const nextStart = new Date(slot.startTime);
-  nextStart.setUTCDate(nextStart.getUTCDate() + 7);
-
-  const nextEnd = new Date(slot.endTime);
-  nextEnd.setUTCDate(nextEnd.getUTCDate() + 7);
-
-  await db.pickupTimeSlot.create({
-    data: {
-      date: nextDate,
-      startTime: nextStart,
-      endTime: nextEnd,
-      active: true,
-    },
-  });
-
-  revalidatePath("/admin/orders");
-  revalidatePath("/checkout");
-}
-
-export const dynamic = "force-dynamic";
+import { updateOrderStatus } from "./actions";
 
 type AdminOrdersPageProps = {
-  searchParams: Promise<{ slot?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    payment?: string;
+    search?: string;
+  }>;
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageProps) {
   await requireAdmin();
   const params = await searchParams;
   const pickupAddress = formatAddress(getPickupAddress());
-  const [orders, pickupSlots, editableSlot] = await Promise.all([
-    db.order.findMany({
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        items: {
-          include: {
-            product: true,
-          },
+  const statusFilter = orderStatusOptions.includes(params.status as (typeof orderStatusOptions)[number])
+    ? (params.status as (typeof orderStatusOptions)[number])
+    : "ALL";
+  const paymentFilter = params.payment === "E_TRANSFER" || params.payment === "CASH" ? params.payment : "ALL";
+  const search = params.search?.trim() ?? "";
+
+  const orders = await db.order.findMany({
+    where: {
+      ...(statusFilter !== "ALL" ? { status: statusFilter } : {}),
+      ...(paymentFilter !== "ALL" ? { paymentMethod: paymentFilter } : {}),
+      ...(search
+        ? {
+            OR: [
+              { orderCode: { contains: search, mode: "insensitive" } },
+              { pickupEmail: { contains: search, mode: "insensitive" } },
+              { pickupPhone: { contains: search, mode: "insensitive" } },
+              { user: { is: { email: { contains: search, mode: "insensitive" } } } },
+              { user: { is: { name: { contains: search, mode: "insensitive" } } } },
+            ],
+          }
+        : {}),
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
         },
       },
-      orderBy: { createdAt: "desc" },
-    }),
-    db.pickupTimeSlot.findMany({
-      orderBy: [{ date: "asc" }, { startTime: "asc" }],
-    }),
-    params.slot ? db.pickupTimeSlot.findUnique({ where: { id: params.slot } }) : Promise.resolve(null),
-  ]);
+      items: {
+        include: {
+          product: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="mx-auto w-full max-w-7xl px-6 py-12 pb-24">
       <div className="max-w-4xl">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-300">Order workspace</p>
-        <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight">Review customer history, control pickup availability, and mark payment progress.</h1>
+        <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight">Review customer history, filter active orders, and update fulfillment status.</h1>
       </div>
 
       <section className="mt-10 rounded-[2rem] border border-white/10 bg-white p-6 text-slate-950 shadow-2xl shadow-slate-950/20">
-        <div className="grid gap-8 xl:grid-cols-[360px_1fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-700">Pickup time management</p>
-            <h2 className="mt-3 font-display text-3xl font-semibold text-slate-950">Set available pickup dates and times</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Create actual pickup windows customers can select during checkout. Edit an existing slot or copy it to the same time next week.
-            </p>
-            {editableSlot ? (
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                <span>Editing {formatPickupSlotLabel(editableSlot)}</span>
-                <Link href="/admin/orders" className="font-semibold text-slate-950">
-                  Clear
-                </Link>
-              </div>
-            ) : null}
-            <form action={createPickupSlot} className="mt-6 grid gap-3 sm:grid-cols-2">
-              <input type="hidden" name="slotId" value={editableSlot?.id ?? ""} />
-              <label className="block space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
-                Pickup date
-                <input
-                  type="date"
-                  name="date"
-                  defaultValue={editableSlot ? formatPickupDateInputValue(editableSlot.date) : ""}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
-                />
-              </label>
-              <label className="block space-y-2 text-sm font-medium text-slate-700">
-                Start time
-                <input
-                  type="time"
-                  name="startTime"
-                  defaultValue={editableSlot ? formatPickupTimeInputValue(editableSlot.startTime) : ""}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
-                />
-              </label>
-              <label className="block space-y-2 text-sm font-medium text-slate-700">
-                End time
-                <input
-                  type="time"
-                  name="endTime"
-                  defaultValue={editableSlot ? formatPickupTimeInputValue(editableSlot.endTime) : ""}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
-                />
-              </label>
-              <button className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:col-span-2">
-                {editableSlot ? "Save pickup window" : "Add pickup window"}
-              </button>
-            </form>
+        <form className="grid gap-4 md:grid-cols-[1.2fr_0.7fr_0.7fr_auto]">
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Search order, email, or phone
+            <input
+              type="search"
+              name="search"
+              defaultValue={search}
+              placeholder="Order ID, email, or phone"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            />
+          </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Status
+            <select
+              name="status"
+              defaultValue={statusFilter}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            >
+              <option value="ALL">All statuses</option>
+              {orderStatusOptions.map((status) => (
+                <option key={status} value={status}>{orderStatusLabels[status]}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-2 text-sm font-medium text-slate-700">
+            Payment
+            <select
+              name="payment"
+              defaultValue={paymentFilter}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
+            >
+              <option value="ALL">All payments</option>
+              <option value="E_TRANSFER">{paymentMethodLabels.E_TRANSFER}</option>
+              <option value="CASH">{paymentMethodLabels.CASH}</option>
+            </select>
+          </label>
+          <div className="flex items-end gap-3">
+            <button className="w-full rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+              Apply filters
+            </button>
           </div>
-
-          <div className="space-y-3">
-            {pickupSlots.length ? (
-              pickupSlots.map((slot) => (
-                <article key={slot.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <p className="font-medium text-slate-950">{formatPickupSlotLabel(slot)}</p>
-                    <p className="mt-1 text-sm text-slate-500">Available in checkout</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href={`/admin/orders?slot=${slot.id}`}
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
-                    >
-                      Edit
-                    </Link>
-                    <form action={copyPickupSlotToNextWeek}>
-                      <input type="hidden" name="slotId" value={slot.id} />
-                      <button className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950">
-                        Copy to next week
-                      </button>
-                    </form>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-sm text-slate-600">
-                No pickup windows yet. Add one so customers can complete checkout.
-              </div>
-            )}
-          </div>
-        </div>
+        </form>
       </section>
 
       <div className="mt-10 space-y-6">
@@ -315,7 +168,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                     <option key={status} value={status}>{orderStatusLabels[status]}</option>
                   ))}
                 </select>
-                <button className="mt-3 w-full rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+                <button type="submit" className="mt-3 w-full rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
                   Save status
                 </button>
               </form>
@@ -347,7 +200,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
 
         {!orders.length ? (
           <div className="rounded-[2rem] border border-dashed border-white/20 bg-white/5 p-10 text-slate-300">
-            No orders have been placed yet.
+            No orders matched the current filters.
           </div>
         ) : null}
       </div>
