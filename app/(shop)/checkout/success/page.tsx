@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CopyButton } from "@/components/copy-button";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -90,8 +91,11 @@ export default async function CheckoutSuccessPage({ searchParams }: CheckoutSucc
           <div className="mt-10 rounded-[2rem] bg-slate-50 p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-500">Latest order</p>
-                <p className="font-display text-2xl font-semibold text-slate-950">{latestOrder.orderCode ?? latestOrder.id}</p>
+                <p className="text-sm text-slate-500">Order ID</p>
+                <div className="mt-1 flex flex-wrap items-center gap-3">
+                  <p className="font-display text-2xl font-semibold text-slate-950">{latestOrder.orderCode ?? latestOrder.id}</p>
+                  <CopyButton value={latestOrder.orderCode ?? latestOrder.id} label="Copy order ID" />
+                </div>
                 <p className="mt-2 text-sm text-slate-500">Placed {formatOrderDate(latestOrder.createdAt)}</p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -108,7 +112,16 @@ export default async function CheckoutSuccessPage({ searchParams }: CheckoutSucc
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-4">
               <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-950">
-                {paymentInstructions[latestOrder.paymentMethod]}
+                {latestOrder.paymentMethod === "E_TRANSFER" ? (
+                  <div>
+                    <p>Send your e-transfer to <span className="font-semibold">{eTransferEmail}</span> and include your order ID in the message.</p>
+                    <div className="mt-3">
+                      <CopyButton value={eTransferEmail} label="Copy transfer email" className="border-amber-300 bg-white/70 text-amber-950 hover:border-amber-700 hover:text-amber-950" />
+                    </div>
+                  </div>
+                ) : (
+                  paymentInstructions[latestOrder.paymentMethod]
+                )}
               </div>
               <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm leading-6 text-sky-950">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-800">Pickup time</p>
