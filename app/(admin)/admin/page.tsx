@@ -8,6 +8,21 @@ import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatCurrency, slugify } from "@/lib/utils";
 
+const mediaUrlSchema = z.string().trim().refine(
+  (value) => {
+    if (!value) {
+      return false;
+    }
+
+    if (value.startsWith("/api/blob?")) {
+      return true;
+    }
+
+    return z.url().safeParse(value).success;
+  },
+  { message: "Enter a valid media URL." },
+);
+
 const productSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2),
@@ -15,8 +30,8 @@ const productSchema = z.object({
   description: z.string().min(10),
   price: z.coerce.number().int().positive(),
   minimumOrderQuantity: z.coerce.number().int().positive(),
-  imageUrl: z.string().url(),
-  videoUrl: z.string().url().optional().or(z.literal("")),
+  imageUrl: mediaUrlSchema,
+  videoUrl: z.union([mediaUrlSchema, z.literal("")]).optional(),
   featured: z.string().optional(),
 });
 

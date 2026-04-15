@@ -90,7 +90,7 @@ export function BlobUploadField({
             </div>
             <input
               name={name}
-              type="url"
+              type="text"
               value={value}
               onChange={(event) => setValue(event.target.value)}
               required={required}

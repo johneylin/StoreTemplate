@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  return new NextResponse(result.body, {
+  return new NextResponse(result.stream, {
     status: 200,
     headers: {
       "Content-Type": result.blob.contentType,
