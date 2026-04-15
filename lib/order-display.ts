@@ -1,6 +1,35 @@
 import { formatAddress } from "@/lib/store-config";
 
-const PICKUP_TIME_ZONE = "America/Toronto";
+function padPickupPart(value: number) {
+  return value.toString().padStart(2, "0");
+}
+
+function formatPickupTimeValue(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+export function createPickupDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+export function createPickupDateTime(date: string, time: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hours, minutes] = time.split(":").map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hours, minutes));
+}
+
+export function formatPickupDateInputValue(date: Date) {
+  return `${date.getUTCFullYear()}-${padPickupPart(date.getUTCMonth() + 1)}-${padPickupPart(date.getUTCDate())}`;
+}
+
+export function formatPickupTimeInputValue(date: Date) {
+  return `${padPickupPart(date.getUTCHours())}:${padPickupPart(date.getUTCMinutes())}`;
+}
 
 export const paymentMethodLabels = {
   E_TRANSFER: "E-transfer",
@@ -68,33 +97,13 @@ export function formatPickupContact(order: {
 }
 
 export function formatPickupSlotRange(startTime: Date, endTime: Date) {
-  return `${new Intl.DateTimeFormat("en-CA", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: PICKUP_TIME_ZONE,
-  }).format(startTime)} - ${new Intl.DateTimeFormat("en-CA", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: PICKUP_TIME_ZONE,
-  }).format(endTime)}`;
+  return `${formatPickupTimeValue(startTime)} - ${formatPickupTimeValue(endTime)}`;
 }
 
 export function formatPickupSlotInputValue(slot: {
   startTime: Date;
 }) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: PICKUP_TIME_ZONE,
-  }).formatToParts(slot.startTime);
-
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-
-  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+  return `${formatPickupDateInputValue(slot.startTime)}T${formatPickupTimeInputValue(slot.startTime)}`;
 }
 
 export function formatPickupSlotLabel(slot: {
@@ -107,7 +116,7 @@ export function formatPickupSlotLabel(slot: {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    timeZone: PICKUP_TIME_ZONE,
+    timeZone: "UTC",
   }).format(slot.date);
 
   return `${dateLabel} ${formatPickupSlotRange(slot.startTime, slot.endTime)}`;

@@ -24,8 +24,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const canBuy = !isComingSoon && !isOutOfStock;
 
   return (
-    <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 py-12 pb-20 lg:grid-cols-[1fr_0.85fr]">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm lg:aspect-auto lg:min-h-[620px]">
+    <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 pb-16 sm:gap-10 sm:px-6 sm:py-10 sm:pb-20 lg:grid-cols-[1fr_0.85fr] lg:py-12">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm sm:rounded-[2.5rem] lg:aspect-auto lg:min-h-[620px]">
         {product.videoUrl ? (
           <video src={product.videoUrl} controls className="h-full w-full object-cover" />
         ) : (
@@ -39,17 +39,21 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         )}
       </div>
 
-      <section className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:rounded-[2.5rem] sm:p-8">
         <Link href="/products" className="text-sm font-semibold text-slate-500 transition hover:text-slate-950">
           Back to products
         </Link>
-        <p className="mt-6 text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">{product.category}</p>
-        <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight text-slate-950">{product.name}</h1>
-        <p className="mt-5 text-lg leading-8 text-slate-600">{product.description}</p>
-        <div className="mt-8 flex items-center justify-between gap-4 rounded-[2rem] bg-slate-50 px-5 py-4">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-amber-700 sm:mt-6 sm:text-sm sm:tracking-[0.28em]">
+          {product.category}
+        </p>
+        <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+          {product.name}
+        </h1>
+        <p className="mt-4 text-base leading-7 text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">{product.description}</p>
+        <div className="mt-6 flex flex-col gap-4 rounded-[1.75rem] bg-slate-50 px-4 py-4 sm:mt-8 sm:flex-row sm:items-center sm:justify-between sm:rounded-[2rem] sm:px-5">
           <div>
             <p className="text-sm text-slate-500">Price</p>
-            <p className="font-display text-3xl font-semibold text-slate-950">{formatCurrency(product.price)}</p>
+            <p className="font-display text-2xl font-semibold text-slate-950 sm:text-3xl">{formatCurrency(product.price)}</p>
             <p className="mt-2 text-sm font-semibold text-slate-700">
               {isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : `In stock: ${product.stockQuantity}`}
             </p>
@@ -64,6 +68,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             minimumQuantity={product.minimumOrderQuantity}
             disabled={!canBuy}
             label={isComingSoon ? "Coming soon" : isOutOfStock ? "Out of stock" : undefined}
+            className="w-full sm:w-auto"
           />
         </div>
       </section>

@@ -14,85 +14,85 @@ export default async function HomePage() {
 
   return (
     <div className="pb-20">
-      <section className="mx-auto w-full max-w-7xl px-6 py-16 lg:py-24">
-        <div className="overflow-hidden rounded-[2.75rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.28),_transparent_28%),linear-gradient(135deg,_#111827_0%,_#1f2937_52%,_#7c2d12_100%)] text-white shadow-2xl shadow-slate-900/20">
-          <div className="grid gap-8 px-8 py-10 lg:grid-cols-[1.15fr_0.85fr] lg:px-12 lg:py-14">
+      <section className="mx-auto w-full max-w-7xl px-4 pt-6 pb-8 sm:px-6 sm:pt-8">
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.22),_transparent_24%),linear-gradient(140deg,_#0f172a_0%,_#1e293b_58%,_#78350f_100%)] text-white shadow-xl shadow-slate-900/15 sm:rounded-[2.75rem]">
+          <div className="grid gap-6 px-5 py-6 sm:px-8 sm:py-8 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:py-10">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300">{STORE_NAME} Building Supply</p>
-              <h1 className="mt-6 max-w-4xl font-display text-5xl font-semibold tracking-tight text-balance md:text-7xl">
-                Materials, hardware, and tools ready for fast pickup.
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-300 sm:text-sm">{STORE_NAME} Building Supply</p>
+              <h1 className="mt-4 max-w-3xl font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl lg:text-6xl">
+                Pickup-ready materials and hardware for the next job.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
-                Stock up on framing lumber, jobsite essentials, anchors, fasteners, and pro-grade tools with a simple pickup checkout flow built for contractors, crews, and home projects.
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:text-base sm:leading-8">
+                Shop lumber, anchors, mixes, fasteners, and site essentials with simple quantity-based ordering and quick local pickup scheduling.
               </p>
-              <p className="mt-4 max-w-xl text-sm font-medium uppercase tracking-[0.28em] text-amber-200">
-                {STORE_TAGLINE}
-              </p>
-              <div className="mt-10 flex flex-wrap gap-4">
-                <Link href="/products" className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link href="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-300">
                   Shop materials
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="/orders" className="inline-flex items-center gap-2 rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                <Link href="/orders" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
                   View order history
                 </Link>
               </div>
-
-              <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                {[
-                  { icon: PackageCheck, label: "Bulk-ready catalog", value: "Lumber, hardware, adhesives" },
-                  { icon: Truck, label: "Pickup workflow", value: "Fast local collection windows" },
-                  { icon: HardHat, label: "Trade friendly", value: "Guest checkout or account orders" },
-                ].map((item) => (
-                  <article key={item.label} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                    <item.icon className="h-5 w-5 text-amber-300" />
-                    <p className="mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">{item.label}</p>
-                    <p className="mt-2 text-sm leading-6 text-white">{item.value}</p>
-                  </article>
-                ))}
-              </div>
+              <p className="mt-5 max-w-xl text-xs font-medium uppercase tracking-[0.24em] text-amber-200 sm:text-sm sm:tracking-[0.28em]">
+                {STORE_TAGLINE}
+              </p>
             </div>
 
-            <div className="grid gap-4 lg:grid-rows-[1.1fr_0.9fr]">
-              <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(145deg,_rgba(255,255,255,0.08),_rgba(255,255,255,0.02))] p-6 backdrop-blur-sm">
-                <div className="flex items-center gap-3 text-amber-300">
-                  <Drill className="h-5 w-5" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">Featured yard picks</p>
-                </div>
-                <div className="mt-6 grid gap-4">
-                  {[
-                    { name: "Pressure-treated lumber", note: "Deck framing and outdoor repairs" },
-                    { name: "Concrete mix & leveling", note: "Foundation patching and post setting" },
-                    { name: "Anchors and fasteners", note: "Reliable stock for site callouts" },
-                  ].map((item) => (
-                    <div key={item.name} className="rounded-[1.5rem] border border-white/10 bg-black/15 px-4 py-4">
-                      <p className="font-display text-2xl font-semibold">{item.name}</p>
-                      <p className="mt-2 text-sm text-slate-300">{item.note}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[2rem] border border-amber-300/20 bg-amber-50 p-6 text-slate-950">
-                <div className="flex items-center gap-3 text-amber-800">
-                  <Ruler className="h-5 w-5" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">Site order notes</p>
-                </div>
-                <h2 className="mt-5 font-display text-3xl font-semibold">Built for bundle and pack quantities</h2>
-                <p className="mt-3 text-sm leading-7 text-slate-700">
-                  Set minimum order quantities for materials sold by box, bundle, or case, then let customers place pickup orders without back-and-forth quoting.
-                </p>
-              </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {[
+                { icon: PackageCheck, label: "Bulk-ready stock", value: "Materials, hardware, and adhesives for trade orders." },
+                { icon: Truck, label: "Simple pickup flow", value: "Choose an available pickup window right at checkout." },
+                { icon: HardHat, label: "Built for site work", value: "Guest orders or account history for repeat buyers." },
+              ].map((item) => (
+                <article key={item.label} className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4 backdrop-blur-sm">
+                  <item.icon className="h-5 w-5 text-amber-300" />
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">{item.label}</p>
+                  <p className="mt-2 text-sm leading-6 text-white">{item.value}</p>
+                </article>
+              ))}
             </div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-center gap-3 text-amber-800">
+              <Drill className="h-5 w-5" />
+              <p className="text-xs font-semibold uppercase tracking-[0.22em]">Featured yard picks</p>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-3">
+              {[
+                { name: "Pressure-treated lumber", note: "Deck framing and exterior repairs" },
+                { name: "Concrete mix", note: "Footings, posts, and patch work" },
+                { name: "Anchors and fasteners", note: "Reliable stock for site callouts" },
+              ].map((item) => (
+                <div key={item.name} className="rounded-[1.4rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                  <p className="font-display text-xl font-semibold text-slate-950">{item.name}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-amber-300/30 bg-amber-50 p-5 text-slate-950 shadow-sm sm:p-6">
+            <div className="flex items-center gap-3 text-amber-800">
+              <Ruler className="h-5 w-5" />
+              <p className="text-xs font-semibold uppercase tracking-[0.22em]">Site order notes</p>
+            </div>
+            <h2 className="mt-4 font-display text-2xl font-semibold sm:text-3xl">Built for bundle and pack quantities</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-700">
+              Set minimum order quantities for materials sold by box, bundle, or case, then let customers place pickup orders without back-and-forth quoting.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-6 pb-8">
+      <section className="mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Featured products</p>
-            <h2 className="mt-2 font-display text-4xl font-semibold text-slate-950">Top picks for the next build</h2>
+            <h2 className="mt-2 font-display text-3xl font-semibold text-slate-950 sm:text-4xl">Top picks for the next build</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (

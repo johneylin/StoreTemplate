@@ -4,10 +4,14 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
+  createPickupDate,
+  createPickupDateTime,
+  formatPickupDateInputValue,
   formatOrderAddress,
   formatOrderDate,
   formatPickupContact,
   formatPickupSlotLabel,
+  formatPickupTimeInputValue,
   formatPickupTime,
   fulfillmentMethodLabels,
   getStatusBadgeClass,
@@ -29,8 +33,8 @@ const pickupSlotSchema = z.object({
   startTime: z.string().min(1),
   endTime: z.string().min(1),
 }).superRefine((value, ctx) => {
-  const start = new Date(`${value.date}T${value.startTime}:00`);
-  const end = new Date(`${value.date}T${value.endTime}:00`);
+  const start = createPickupDateTime(value.date, value.startTime);
+  const end = createPickupDateTime(value.date, value.endTime);
 
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
     ctx.addIssue({
@@ -75,9 +79,9 @@ async function createPickupSlot(formData: FormData) {
 
   await requireAdmin();
   const parsed = pickupSlotSchema.parse(Object.fromEntries(formData));
-  const start = new Date(`${parsed.date}T${parsed.startTime}:00`);
-  const end = new Date(`${parsed.date}T${parsed.endTime}:00`);
-  const date = new Date(`${parsed.date}T00:00:00`);
+  const start = createPickupDateTime(parsed.date, parsed.startTime);
+  const end = createPickupDateTime(parsed.date, parsed.endTime);
+  const date = createPickupDate(parsed.date);
 
   if (parsed.slotId) {
     await db.pickupTimeSlot.update({
@@ -117,13 +121,13 @@ async function copyPickupSlotToNextWeek(formData: FormData) {
   }
 
   const nextDate = new Date(slot.date);
-  nextDate.setDate(nextDate.getDate() + 7);
+  nextDate.setUTCDate(nextDate.getUTCDate() + 7);
 
   const nextStart = new Date(slot.startTime);
-  nextStart.setDate(nextStart.getDate() + 7);
+  nextStart.setUTCDate(nextStart.getUTCDate() + 7);
 
   const nextEnd = new Date(slot.endTime);
-  nextEnd.setDate(nextEnd.getDate() + 7);
+  nextEnd.setUTCDate(nextEnd.getUTCDate() + 7);
 
   await db.pickupTimeSlot.create({
     data: {
@@ -201,7 +205,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                 <input
                   type="date"
                   name="date"
-                  defaultValue={editableSlot ? editableSlot.date.toISOString().slice(0, 10) : ""}
+                  defaultValue={editableSlot ? formatPickupDateInputValue(editableSlot.date) : ""}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
                 />
               </label>
@@ -210,7 +214,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                 <input
                   type="time"
                   name="startTime"
-                  defaultValue={editableSlot ? editableSlot.startTime.toISOString().slice(11, 16) : ""}
+                  defaultValue={editableSlot ? formatPickupTimeInputValue(editableSlot.startTime) : ""}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
                 />
               </label>
@@ -219,7 +223,7 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                 <input
                   type="time"
                   name="endTime"
-                  defaultValue={editableSlot ? editableSlot.endTime.toISOString().slice(11, 16) : ""}
+                  defaultValue={editableSlot ? formatPickupTimeInputValue(editableSlot.endTime) : ""}
                   className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-slate-950"
                 />
               </label>
