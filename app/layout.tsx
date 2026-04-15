@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable}`}>
       <body className="font-sans text-slate-950 antialiased">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
