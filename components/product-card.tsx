@@ -49,14 +49,14 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="pointer-events-none relative z-20 space-y-2 p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="font-display text-sm font-semibold leading-5 text-slate-950 sm:text-base sm:leading-6 lg:text-lg">
+          <p className="line-clamp-2 font-display text-lg font-semibold leading-6 text-slate-950 sm:text-xl">
             {product.name}
           </p>
           <span className="shrink-0 text-base font-semibold text-slate-900 sm:text-lg">{formatCurrency(product.price)}</span>
         </div>
         <div className="space-y-1.5">
           {product.minimumOrderQuantity > 1 ? (
-            <p className="text-[0.55rem] font-semibold uppercase tracking-[0.16em] text-slate-500 sm:text-[0.6rem]">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
               Minimum order {product.minimumOrderQuantity}
             </p>
           ) : null}

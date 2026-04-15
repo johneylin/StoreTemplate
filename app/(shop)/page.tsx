@@ -14,7 +14,7 @@ export default async function HomePage() {
 
   return (
     <div className="pb-20">
-      <section className="mx-auto w-full max-w-7xl px-4 pt-6 pb-8 sm:px-6 sm:pt-8">
+      <section className="mx-auto w-full max-w-6xl px-4 pt-6 pb-8 sm:px-6 sm:pt-8">
         <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.22),_transparent_24%),linear-gradient(140deg,_#0f172a_0%,_#1e293b_58%,_#78350f_100%)] text-white shadow-xl shadow-slate-900/15 sm:rounded-[2.75rem]">
           <div className="grid gap-6 px-5 py-6 sm:px-8 sm:py-8 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:py-10">
             <div>
@@ -88,7 +88,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6">
+      <section className="mx-auto w-full max-w-6xl px-4 pb-8 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Featured products</p>

@@ -21,7 +21,7 @@ export default async function CheckoutPage() {
   const pickupAddress = formatAddress(getPickupAddress());
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-6 py-12 pb-20">
+    <div className="mx-auto w-full max-w-6xl px-6 py-12 pb-20">
       <CheckoutClient
         products={products}
         pickupAddress={pickupAddress}

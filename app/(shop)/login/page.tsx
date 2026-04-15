@@ -10,7 +10,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl justify-center px-4 py-10 pb-20 sm:px-6 sm:py-16 sm:pb-24">
+    <div className="mx-auto flex w-full max-w-6xl justify-center px-4 py-10 pb-20 sm:px-6 sm:py-16 sm:pb-24">
       <AuthForm />
     </div>
   );

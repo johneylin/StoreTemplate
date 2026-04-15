@@ -24,7 +24,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const canBuy = !isComingSoon && !isOutOfStock;
 
   return (
-    <div className="mx-auto grid w-full max-w-7xl min-w-0 gap-6 overflow-x-clip px-4 py-6 pb-16 sm:gap-10 sm:px-6 sm:py-10 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:py-12">
+    <div className="mx-auto grid w-full max-w-6xl min-w-0 gap-6 overflow-x-clip px-4 py-6 pb-16 sm:gap-10 sm:px-6 sm:py-10 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:py-12">
       <div className="relative min-w-0 aspect-[4/3] overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm sm:rounded-[2.5rem] lg:aspect-auto lg:min-h-[620px]">
         {product.videoUrl ? (
           <video src={product.videoUrl} controls className="h-full w-full object-cover" />

@@ -22,7 +22,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   ]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-6 py-12 pb-20">
+    <div className="mx-auto w-full max-w-6xl px-6 py-12 pb-20">
       <div className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Product catalog</p>
       </div>
