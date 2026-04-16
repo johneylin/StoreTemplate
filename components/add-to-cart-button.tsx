@@ -55,8 +55,6 @@ export function AddToCartButton({
           ? cn(
               "h-7 w-7 p-0 sm:h-9 sm:w-9",
               quickAdd &&
-                "justify-start",
-              quickAdd &&
                 (added
                   ? "w-[4.6rem] sm:w-[5.4rem]"
                   : "hover:w-[4.1rem] focus-visible:w-[4.1rem] sm:hover:w-[4.8rem] sm:focus-visible:w-[4.8rem]"),
@@ -70,22 +68,22 @@ export function AddToCartButton({
           <LoaderCircle className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
         </span>
       ) : added && quickAdd ? (
-        <span className="flex h-full w-full items-center pl-2.5 sm:pl-3">
-          <span className="flex w-full items-center gap-1.5 sm:gap-2">
+        <span className="flex h-full w-full items-center justify-center overflow-hidden">
+          <span className="flex items-center justify-center">
             <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-950 transition-transform duration-300 sm:h-4 sm:w-4">
               <Check className="h-3.5 w-3.5 animate-in zoom-in-95 sm:h-4 sm:w-4" />
             </span>
-            <span className="whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-100 translate-x-0 transition-all duration-300 sm:text-xs">
+            <span className="ml-1.5 whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-100 translate-x-0 transition-all duration-300 sm:ml-2 sm:text-xs">
               Added
             </span>
           </span>
         </span>
       ) : iconOnly && quickAdd ? (
-        <span className="flex h-full w-full items-center pl-2.5 sm:pl-3">
-          <span className="flex w-full items-center gap-1.5 sm:gap-2">
+        <span className="flex h-full w-full items-center justify-center overflow-hidden">
+          <span className="flex items-center justify-center">
             <span
               className={cn(
-                "relative inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-950 transition-all duration-300 sm:h-4 sm:w-4",
+                "relative flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-950 transition-all duration-300 sm:h-4 sm:w-4",
                 "group-hover:-translate-x-0.5 group-focus-visible:-translate-x-0.5",
               )}
             >
@@ -94,7 +92,8 @@ export function AddToCartButton({
             </span>
             <span
               className={cn(
-                "whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-0 translate-x-2 transition-all duration-300 sm:text-xs",
+                "ml-0 max-w-0 whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-0 translate-x-2 overflow-hidden transition-all duration-300 sm:text-xs",
+                "group-hover:ml-1.5 group-hover:max-w-8 group-focus-visible:ml-1.5 group-focus-visible:max-w-8 sm:group-hover:ml-2 sm:group-hover:max-w-10 sm:group-focus-visible:ml-2 sm:group-focus-visible:max-w-10",
                 "group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0",
               )}
             >
