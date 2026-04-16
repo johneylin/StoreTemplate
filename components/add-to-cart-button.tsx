@@ -50,15 +50,9 @@ export function AddToCartButton({
       disabled={disabled}
       aria-label={ariaLabel ?? label ?? (minimumQuantity > 1 ? `Add ${minimumQuantity}+ to cart` : "Add to cart")}
       className={cn(
-        "inline-flex items-center justify-center overflow-hidden rounded-full bg-slate-950 text-white transition-all duration-300 hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600",
+        "inline-flex items-center justify-center rounded-full bg-slate-950 text-white transition-colors duration-300 hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600",
         iconOnly
-          ? cn(
-              "h-7 w-7 p-0 sm:h-9 sm:w-9",
-              quickAdd &&
-                (added
-                  ? "w-[4.6rem] sm:w-[5.4rem]"
-                  : "hover:w-[4.1rem] focus-visible:w-[4.1rem] sm:hover:w-[4.8rem] sm:focus-visible:w-[4.8rem]"),
-            )
+          ? "relative h-7 w-7 p-0 sm:h-9 sm:w-9"
           : "gap-1.5 px-3 py-1.5 text-xs font-semibold sm:gap-2 sm:px-5 sm:py-3 sm:text-sm",
         className,
       )}
@@ -68,22 +62,22 @@ export function AddToCartButton({
           <LoaderCircle className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
         </span>
       ) : added && quickAdd ? (
-        <span className="flex h-full w-full items-center justify-center overflow-hidden">
-          <span className="flex items-center justify-center">
-            <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-950 transition-transform duration-300 sm:h-4 sm:w-4">
+        <span className="absolute left-0 top-1/2 flex -translate-y-1/2 items-center justify-center">
+          <span className="flex items-center justify-center transition-transform duration-300 ease-out">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center text-slate-950 sm:h-9 sm:w-9">
               <Check className="h-3.5 w-3.5 animate-in zoom-in-95 sm:h-4 sm:w-4" />
             </span>
-            <span className="ml-1.5 whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-100 translate-x-0 transition-all duration-300 sm:ml-2 sm:text-xs">
+            <span className="ml-1.5 whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-100 translate-x-0 transition-transform duration-300 ease-out transition-opacity sm:ml-2 sm:text-xs">
               Added
             </span>
           </span>
         </span>
       ) : iconOnly && quickAdd ? (
-        <span className="flex h-full w-full items-center justify-center overflow-hidden">
-          <span className="flex items-center justify-center">
+        <span className="absolute left-0 top-1/2 flex -translate-y-1/2 items-center justify-center">
+          <span className="flex items-center justify-center transition-transform duration-300 ease-out">
             <span
               className={cn(
-                "relative flex h-3.5 w-3.5 shrink-0 items-center justify-center text-slate-950 transition-all duration-300 sm:h-4 sm:w-4",
+                "relative flex h-7 w-7 shrink-0 items-center justify-center text-slate-950 transition-transform duration-300 ease-out sm:h-9 sm:w-9",
                 "group-hover:-translate-x-0.5 group-focus-visible:-translate-x-0.5",
               )}
             >
@@ -92,8 +86,7 @@ export function AddToCartButton({
             </span>
             <span
               className={cn(
-                "ml-0 max-w-0 whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-0 translate-x-2 overflow-hidden transition-all duration-300 sm:text-xs",
-                "group-hover:ml-1.5 group-hover:max-w-8 group-focus-visible:ml-1.5 group-focus-visible:max-w-8 sm:group-hover:ml-2 sm:group-hover:max-w-10 sm:group-focus-visible:ml-2 sm:group-focus-visible:max-w-10",
+                "ml-1.5 whitespace-nowrap text-[0.65rem] font-semibold text-slate-950 opacity-0 translate-x-2 transition-transform duration-300 ease-out transition-opacity sm:ml-2 sm:text-xs",
                 "group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0",
               )}
             >
