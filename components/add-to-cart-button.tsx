@@ -50,8 +50,10 @@ export function AddToCartButton({
       disabled={disabled}
       aria-label={ariaLabel ?? label ?? (minimumQuantity > 1 ? `Add ${minimumQuantity}+ to cart` : "Add to cart")}
       className={cn(
-        "inline-flex min-w-24 items-center justify-center gap-1.5 rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 sm:min-w-32 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm",
-        iconOnly && "min-w-0 rounded-full px-0",
+        "inline-flex items-center justify-center rounded-full bg-slate-950 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600",
+        iconOnly
+          ? "h-7 w-7 p-0 sm:h-9 sm:w-9"
+          : "gap-1.5 px-3 py-1.5 text-xs font-semibold sm:gap-2 sm:px-5 sm:py-3 sm:text-sm",
         className,
       )}
     >
